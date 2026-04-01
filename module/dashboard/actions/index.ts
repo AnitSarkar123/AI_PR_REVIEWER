@@ -5,7 +5,42 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { Octokit } from 'octokit';
 import prisma from '@/lib/db';
+export async function getContributionStats() {
+    try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+        if (!session?.user) {
+            throw new Error("Unauthorized")
+        }
+        const token = await getGithubToken()
+        const octokit = new Octokit({
+            auth: token
+        })
+        const { data: user } = await octokit.rest.users.getAuthenticated()
+        const username = user.login;
+        const calender = await fetchUserContribution(token, username)
+        if (!calender) {
+            return null;
+        }
+        const contribution = calender.weeks.flatMap((week: any) => week.contributionDays.map((day: any) => ({
+            date: day.date,
+            count: day.contributionCount,
+            level: Math.min(4, Math.floor(day.contributionCount / 3))
 
+
+        }))
+        )
+        return {
+            totalContributions: calender.totalContributions,
+            contributions: contribution
+        }
+    }
+    catch (error) {
+        console.error("Error fetching contribution stats:", error);
+        return null;
+    }
+}
 export async function getDashboardStatus(){
     try{
         const session =await auth.api.getSession({
@@ -34,12 +69,12 @@ export async function getDashboardStatus(){
         const totalPRs = prs.total_count
 
         //count ai reviews from database todo
-        const totalAIReviews = 44
+        const totalReviews = 44
         return{
             totalRepos,
             TotalCommits,
             totalPRs,
-            totalAIReviews
+            totalReviews
 
         }
         
@@ -51,7 +86,7 @@ export async function getDashboardStatus(){
             totalRepos: 0,
             TotalCommits: 0,
             totalPRs: 0,
-            totalAIReviews: 0
+            totalReviews: 0
         }
     }
 }
