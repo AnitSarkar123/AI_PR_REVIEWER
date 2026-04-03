@@ -25,9 +25,26 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  repositories Repository[]
 
   @@unique([email])
   @@map("user")
+}
+
+model Repository{
+  id String @id @default(cuid())
+  githubId String @unique
+  name String
+  owner String
+  fullName String
+  url String
+  userid String
+  user User @relation(fields: [userid], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userid])
+  @@map("repository")
 }
 
 model Session {
