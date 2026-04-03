@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RepositoryListSkeleton } from '@/module/repository/components/repository-skeleton';
+import { useConnectRepository } from '@/module/repository/hooks/use-connect-repository';
 
 interface Repository {
     id: number;
@@ -29,6 +30,7 @@ const RepositoryPage = () => {
         hasNextPage,
         isFetchingNextPage
     } = useRepositories()
+	const { mutate: connectRepo } = useConnectRepository()
     const [localConnectingId, setLocalConnectingId] = React.useState<number | null>(null)
     
     const [searchQuery, setSearchQuery] = React.useState('')
@@ -92,6 +94,17 @@ const RepositoryPage = () => {
         repo.language?.toLowerCase().includes(searchQuery.toLowerCase()) 
     )
     const handleConnect = async (repo: any) => {
+		setLocalConnectingId(repo.id);
+		connectRepo(
+			{
+				owner: repo.full_name.split("/")[0],
+				repo: repo.name,
+				githubId: repo.id,
+			},
+			{
+				onSettled: () => setLocalConnectingId(null)
+			}
+		)
 
 
     }
