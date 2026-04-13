@@ -26,6 +26,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   repositories Repository[]
+  userUsage     UserUsage?
 
   @@unique([email])
   @@map("user")
@@ -40,11 +41,42 @@ model Repository{
   url String
   userid String
   user User @relation(fields: [userid], references: [id], onDelete: Cascade)
+  reviews Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userid])
   @@map("repository")
+}
+
+model Review {
+	id 			 String     @id @default(cuid())
+	repositoryId String
+	repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+	prNumber     Int
+	prTitle      String
+	prUrl        String
+	review       String     @db.Text
+	status       String     @default("completed")
+
+	createdAt    DateTime   @default(now())
+	updatedAt    DateTime   @updatedAt
+
+	@@index([repositoryId])
+	@@map("review")
+}
+
+model UserUsage {
+	id        		String @id @default(cuid())
+	userId    		String @unique
+	user      		User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+	repositoryCount Int    @default(0)
+	reviewCounts    Json   @default("{}")
+
+	createdAt       DateTime @default(now())
+	updatedAt       DateTime @updatedAt
+
+	@@map("user_usage")
 }
 
 model Session {
