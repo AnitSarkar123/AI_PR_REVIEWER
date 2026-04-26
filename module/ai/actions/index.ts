@@ -5,7 +5,7 @@ import { inngest } from "@/inngest/client";
 import prisma from "@/lib/db"
 import { getPullRequestDiff } from "@/module/github/lib/github";
 // import { success } from "better-auth";
-import { Repository } from '../../../lib/generated/prisma/browser';
+import { canCreateReview, incrementReviewCount } from "@/module/payment/lib/subscription";
 
 export async function reviewPullRequest(owner:string, repo:string, prNumber:number){
     try {
@@ -30,6 +30,10 @@ export async function reviewPullRequest(owner:string, repo:string, prNumber:numb
         if(!repository){
         throw new Error(" Repository not found please try again later")
         }
+        const canReview = await canCreateReview(repository.user.id, repository.id)
+        if (!canReview) {
+            throw new Error("Review limit reached for this month please upgrade your subscription plan")
+        }
         const githubAccount = repository?.user.accounts[0];
         if(!githubAccount?.accessToken){
         throw new Error(" Github account not found please try again later")
@@ -46,6 +50,7 @@ export async function reviewPullRequest(owner:string, repo:string, prNumber:numb
             }
     
         })
+        await incrementReviewCount(repository.user.id, repository.id)
         return {
             success:true,
             message:`Pull request review requested for ${title}`
