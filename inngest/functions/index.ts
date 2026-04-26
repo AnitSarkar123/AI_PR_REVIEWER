@@ -8,8 +8,8 @@ import { indexCodebase } from '@/module/ai/lib/rag';
 
 
 export const indexRepo = inngest.createFunction(
-  { id: "index-repo", triggers: { event: "repository.connected" } },
-
+  { id: "index-repo" },
+  { event: "repository.connected" },
   async ({ event, step }) => {
     console.log("Indexing repository for RAG:", event.data)
     const { owner, repo, userId } = event.data

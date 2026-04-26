@@ -7,7 +7,9 @@ import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 // import { success } from "better-auth";
 
-export const generateReview = inngest.createFunction({ id: "generate-review", concurrency: 5, triggers: { event: "pr.review.requested" } },
+export const generateReview = inngest.createFunction(
+    { id: "generate-review", concurrency: 5 },
+    { event: "pr.review.requested" },
     async ({ event, step }) => {
 
         const { owner, repo, prNumber, userId } = event.data

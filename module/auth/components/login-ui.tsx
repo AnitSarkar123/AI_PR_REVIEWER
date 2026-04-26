@@ -47,7 +47,7 @@ const LoginUI = () => {
 				<div className="w-full max-w-sm">
 					<div className="mb-12">
 						<h2 className="text-3xl font-bold mb-2">
-							Welcome back
+							Welcome
 						</h2>
 						<p className="text-gray-400">
 							SignUp or Login using the following providers:
