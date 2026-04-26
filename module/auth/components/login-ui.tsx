@@ -25,7 +25,7 @@ const LoginUI = () => {
 					<div className="mb-16">
 						<div className="inline-flex items-center gap-2 text-2xl font-bold">
 							<div className="w-8 h-8 bg-primary rounded-full" />
-							<span>CodeHorse</span>
+							<span>AI PR Reviewer</span>
 						</div>
 					</div>
 
@@ -50,7 +50,7 @@ const LoginUI = () => {
 							Welcome back
 						</h2>
 						<p className="text-gray-400">
-							Login using the following providers:
+							SignUp or Login using the following providers:
 						</p>
 					</div>
 
@@ -64,26 +64,8 @@ const LoginUI = () => {
 						{isLoading ? "Signing in..." : "GitHub"}
 					</button>
 
-					{/* Footer Links */}
-					<div className="space-y-4 text-center text-sm text-gray-400">
-						<div>
-							New to CodeHorse?{" "}
-							<a
-								href="#"
-								className="text-primary hover:text-muted-foreground font-semibold"
-							>
-								Sign up
-							</a>
-						</div>
-						<div>
-							<a
-								href="#"
-								className="text-primary hover:text-muted-foreground font-semibold"
-							>
-								Self Hosted Services
-							</a>
-						</div>
-					</div>
+				
+					
 
 					{/* Bottom Links */}
 					<div className="mt-12 pt-8 border-t border-gray-700 flex justify-center gap-4 text-xs text-gray-500">

@@ -16,6 +16,7 @@ export const auth = betterAuth({
             scope:["repo"]
         }
     },
+    trustedOrigins:["http://localhost:3000","https://johnetta-unfoul-jazmin.ngrok-free.dev"],
     plugins:[
         polar({
             client: polarClient,
@@ -28,7 +29,7 @@ export const auth = betterAuth({
                             slug: "AicodeReviewer" // Custom slug for easy reference in Checkout URL, e.g. /checkout/AicodeReviewer
                         }
                     ],
-                    successUrl: process.env.POLAR_SUCCESS_URL,
+                    successUrl: process.env.POLAR_SUCCESS_URL|| "/dashboard/subscription?success=true",
                     authenticatedUsersOnly: true
                 }),
                 portal({
