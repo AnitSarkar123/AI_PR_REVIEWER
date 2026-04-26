@@ -27,6 +27,10 @@ model User {
   accounts      Account[]
   repositories Repository[]
   userUsage     UserUsage?
+  subscriptionTier   String    @default("FREE")
+	subscriptionStatus String?
+  polarCustomerId    String?   @unique
+  polarSubscriptionId  String?   @unique
 
   @@unique([email])
   @@map("user")

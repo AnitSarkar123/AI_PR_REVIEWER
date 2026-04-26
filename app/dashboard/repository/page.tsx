@@ -1,61 +1,106 @@
-"use client"
-import React, { useEffect } from 'react'
+"use client";
 
-import { useRepositories } from '@/module/repository/hooks/use-repositories';
-import { ExternalLink, Search, Star } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { RepositoryListSkeleton } from '@/module/repository/components/repository-skeleton';
-import { useConnectRepository } from '@/module/repository/hooks/use-connect-repository';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ExternalLink, Star, Search } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+// import { useRepositories } from "@/modules/repository/hooks/use-repositories";
+import { useRepositories } from "@/module/repository/hooks/use-repositories";
+// import { RepositoryListSkeleton } from "@/modules/repository/components/repository-skeleton";
+import { RepositoryListSkeleton } from "@/module/repository/components/repository-skeleton";
+// import { useConnectRepository } from "@/modules/repository/hooks/use-connect-repository";
+import { useConnectRepository } from "@/module/repository/hooks/use-connect-repository";
 
 interface Repository {
-    id: number;
-    name: string;
-    full_name: string;
-    description: string;
-    html_url: string;
-    stargazer_count: number;
-    language: string;
-    topic: string[];
-    isConnected: boolean;
+	id: number;
+	name: string;
+	full_name: string;
+	description: string | null;
+	html_url: string;
+	stargazers_count: number;
+	language: string | null;
+	topics: string[];
+	isConnected?: boolean;
 }
-const RepositoryPage = () => {
-    const {
-        data,
-        isLoading,
-        isError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage
-    } = useRepositories()
-	const { mutate: connectRepo } = useConnectRepository()
-    const [localConnectingId, setLocalConnectingId] = React.useState<number | null>(null)
-    
-    const [searchQuery, setSearchQuery] = React.useState('')
-    const allRepositories = data?.pages.flatMap(page => page) || []
-    const observerTarget = React.useRef<HTMLDivElement>(null)
-    useEffect(()=>{
-        const observer = new IntersectionObserver((entries)=>{
-            if(entries[0].isIntersecting && hasNextPage && !isFetchingNextPage){
-                fetchNextPage()
-            }
-        },{
-            threshold:0.1
-        }
-        )
-        const currentTarget = observerTarget.current
-        if(currentTarget){
-            observer.observe(currentTarget)
-        }
-        return()=>{
-            if(currentTarget){
-                observer.unobserve(currentTarget)
-            }
-        }
-    },[hasNextPage,isFetchingNextPage,fetchNextPage])
-    if (isLoading) {
+
+const RepositoryPageClient = () => {
+	const {
+		data,
+		isLoading,
+		isError,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useRepositories();
+
+	const { mutate: connectRepo } = useConnectRepository();
+
+	const [localConnectingId, setLocalConnectingId] = useState<number | null>(
+		null
+	);
+	const [searchQuery, setSearchQuery] = useState("");
+	const observerTarget = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries: any) => {
+				if (
+					entries[0].isIntersecting &&
+					hasNextPage &&
+					!isFetchingNextPage
+				) {
+					fetchNextPage();
+				}
+			},
+			{
+				threshold: 0.1,
+			}
+		);
+
+		const currentTarget = observerTarget.current;
+		if (currentTarget) {
+			observer.observe(currentTarget);
+		}
+
+		return () => {
+			if (currentTarget) {
+				observer.unobserve(currentTarget);
+			}
+		};
+	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+	const allRepositories = data?.pages.flatMap((page) => page) || [];
+
+	const filteredRepositories = allRepositories.filter(
+		(repo: Repository) =>
+			repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			repo.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+	);
+
+	const handleConnect = (repo: Repository) => {
+		setLocalConnectingId(repo.id);
+		connectRepo(
+			{
+				owner: repo.full_name.split("/")[0],
+				repo: repo.name,
+				githubId: repo.id,
+			},
+			{
+				onSettled: () => setLocalConnectingId(null),
+			}
+		);
+	};
+
+	if (isLoading) {
 		return (
 			<div className="space-y-4">
 				<div>
@@ -70,7 +115,8 @@ const RepositoryPage = () => {
 			</div>
 		);
 	}
-    if (isError) {
+
+	if (isError) {
 		return (
 			<div className="space-y-4">
 				<div>
@@ -87,51 +133,29 @@ const RepositoryPage = () => {
 			</div>
 		);
 	}
-    const filteredRepositories = allRepositories.filter((repo: Repository) =>
-        repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        repo.full_name.toLowerCase().includes(searchQuery.toLowerCase())||
-        repo.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        repo.language?.toLowerCase().includes(searchQuery.toLowerCase()) 
-    )
-    const handleConnect = async (repo: any) => {
-		setLocalConnectingId(repo.id);
-		connectRepo(
-			{
-				owner: repo.full_name.split("/")[0],
-				repo: repo.name,
-				githubId: repo.id,
-			},
-			{
-				onSettled: () => setLocalConnectingId(null)
-			}
-		)
 
+	return (
+		<div className="space-y-4">
+			<div>
+				<h1 className="text-3xl font-bold tracking-tighter">
+					Repositories
+				</h1>
+				<p className="text-muted-foreground">
+					Manage and view all your GitHub repositories
+				</p>
+			</div>
 
-    }
-        
+			<div className="relative">
+				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder="Search repositories..."
+					className="pl-8"
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+				/>
+			</div>
 
-
-    return (
-        <div className='space-y-4'>
-            <div>
-                <h1 className="text-3xl font-bold tracking-tighter">
-                    Repositories
-                </h1>
-                <p className="text-muted-foreground">
-                    Manage and view all your GitHub repositories
-                </p>
-            </div>
-
-            <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search repositories..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-            <div className="grid gap-4">
+			<div className="grid gap-4">
 				{filteredRepositories.map((repo: any) => (
 					<Card
 						key={repo.id}
@@ -207,7 +231,8 @@ const RepositoryPage = () => {
 					</Card>
 				))}
 			</div>
-            <div ref={observerTarget} className="py-4">
+
+			<div ref={observerTarget} className="py-4">
 				{isFetchingNextPage && <RepositoryListSkeleton />}
 				{!hasNextPage && allRepositories.length > 0 && (
 					<p className="text-center text-muted-foreground">
@@ -215,12 +240,8 @@ const RepositoryPage = () => {
 					</p>
 				)}
 			</div>
+		</div>
+	);
+};
 
-        </div>
-
-
-
-    )
-}
-
-export default RepositoryPage
+export default RepositoryPageClient;
