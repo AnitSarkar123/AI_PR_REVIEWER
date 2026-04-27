@@ -11,9 +11,9 @@ export const generateReview = inngest.createFunction(
     { id: "generate-review" },
     { event: "pr.review.requested" },
     async ({ event, step }) => {
-
-        const { owner, repo, prNumber, userId } = event.data
-        console.log("Generating review for PR:", owner, repo, prNumber)
+        try {
+            const { owner, repo, prNumber, userId } = event.data
+            console.log("[INNGEST] Generating review for PR:", owner, repo, prNumber)
         const { diff, title, description, token } = await step.run("fetch-pr-data", async () => {
             const account = await prisma.account.findFirst({
                 where: {
@@ -102,9 +102,14 @@ export const generateReview = inngest.createFunction(
 
             }
         })
+        console.log("[INNGEST] Review completed successfully for:", owner, repo, prNumber)
         return {
             success:true
 
+        }
+        } catch (error) {
+            console.error("[INNGEST] Error in generateReview function:", error)
+            throw error;
         }
     }
 )
