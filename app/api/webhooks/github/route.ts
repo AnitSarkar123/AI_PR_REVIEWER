@@ -6,7 +6,10 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
         const event = req.headers.get("X-gitHub-event")
+        console.log(`[WEBHOOK] Received GitHub event: ${event}`);
+        
         if (event == "ping") {
+            console.log(`[WEBHOOK] Ping received`);
             return NextResponse.json({ message: "pong" }, { status: 200 })
 
         }
@@ -16,8 +19,11 @@ export async function POST(req: NextRequest) {
 
             const owner = body.repository.owner.login;
             const repo = body.repository.name;
+            console.log(`[WEBHOOK] PR ${action}: ${owner}/${repo}#${prNumber}`);
+            
             if (action === "opened" || action === "synchronize") {
-                reviewPullRequest(owner, repo, prNumber).then(() => console.log(`PR review process completed for PR ${owner}/${repo}#${prNumber}`)).catch((error) => console.log(`Error in PR review process of ${owner}/${repo}#${prNumber}`, error))
+                console.log(`[WEBHOOK] Triggering review for ${owner}/${repo}#${prNumber}`);
+                reviewPullRequest(owner, repo, prNumber).then(() => console.log(`[WEBHOOK] PR review process completed for PR ${owner}/${repo}#${prNumber}`)).catch((error) => console.log(`[WEBHOOK] Error in PR review process of ${owner}/${repo}#${prNumber}`, error))
             }
 
 
@@ -25,7 +31,7 @@ export async function POST(req: NextRequest) {
         //HANDELED LATER
         return NextResponse.json({ message: "Event received" }, { status: 200 })
     } catch (error) {
-        console.log("Error handling GitHub webhook:", error)
+        console.log("[WEBHOOK] Error handling GitHub webhook:", error)
         return NextResponse.json({ message: "Error handling webhook" }, { status: 500 })
     }
 }

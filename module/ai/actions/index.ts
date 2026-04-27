@@ -9,6 +9,7 @@ import { canCreateReview, incrementReviewCount } from "@/module/payment/lib/subs
 
 export async function reviewPullRequest(owner:string, repo:string, prNumber:number){
     try {
+        console.log(`[PR REVIEW] Starting for ${owner}/${repo}#${prNumber}`);
         const repository =await prisma.repository.findFirst({
             where:{
                 owner,
@@ -28,8 +29,10 @@ export async function reviewPullRequest(owner:string, repo:string, prNumber:numb
     
         })
         if(!repository){
-        throw new Error(" Repository not found please try again later")
+            console.error(`[PR REVIEW] Repository NOT found in DB: ${owner}/${repo}`);
+            throw new Error(" Repository not found please try again later")
         }
+        console.log(`[PR REVIEW] Repository found, proceeding with review`);
         const canReview = await canCreateReview(repository.user.id, repository.id)
         if (!canReview) {
             throw new Error("Review limit reached for this month please upgrade your subscription plan")
