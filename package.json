@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.58",
+    "@ai-sdk/openai-compatible": "^2.0.48",
     "@hookform/resolvers": "^5.2.2",
     "@pinecone-database/pinecone": "^7.1.0",
     "@polar-sh/better-auth": "^1.8.3",
