@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
 import ContributionGraph from '../../module/dashboard/components/contribution-graph';
@@ -49,74 +50,87 @@ const Mainpage = () => {
       <div>
         <h1 className='text-3xl font-bold tracking-tight'>Dashboard</h1>
         <p className='text-muted-foreground'>Overview of your github activity and ai reviews</p>
-        <div className='grid grid-4 md:grid-cols-4'>
-          <Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 my-6">
+          <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Repositories
               </CardTitle>
-              <GitBranch className="h-4 w-4 text-muted-foreground" />
+              <GitBranch className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : stats?.totalRepos || 0}
+              <div className="text-2xl font-bold mt-1">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20 bg-muted/65" />
+                ) : (
+                  stats?.totalRepos || 0
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 Connected Repositories
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Commits
               </CardTitle>
-              <GitCommit className="h-4 w-4 text-muted-foreground" />
+              <GitCommit className="h-4 w-4 text-violet-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading
-                  ? "..."
-                  : (stats?.TotalCommits || 0).toLocaleString()}
+              <div className="text-2xl font-bold mt-1">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20 bg-muted/65" />
+                ) : (
+                  (stats?.TotalCommits || 0).toLocaleString()
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 In the last year
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pull Requests
               </CardTitle>
-              <GitPullRequest className="h-4 w-4 text-muted-foreground" />
+              <GitPullRequest className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : stats?.totalPRs || 0}
+              <div className="text-2xl font-bold mt-1">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20 bg-muted/65" />
+                ) : (
+                  stats?.totalPRs || 0
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 All Time
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 AI Reviews
               </CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <MessageSquare className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : stats?.totalReviews || 0}
+              <div className="text-2xl font-bold mt-1">
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20 bg-muted/65" />
+                ) : (
+                  stats?.totalReviews || 0
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-1">
                 Generated Reviews
               </p>
             </CardContent>
           </Card>
-
         </div>
       </div>
       <Card>

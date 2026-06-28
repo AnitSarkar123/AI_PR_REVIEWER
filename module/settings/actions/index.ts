@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache"
 import { Session, Repository } from '../../../lib/generated/prisma/browser';
 import { success } from "better-auth"
 import { deleteWebhook } from "@/module/github/lib/github"
+import { decrementRepositoryCount, resetRepositoryCount } from "@/module/payment/lib/subscription"
 
 export async function getUserProfile(){
     try {
@@ -133,6 +134,7 @@ export async function disconnectRepository(repositoryId: string){
                 userid:session.user.id
             }
         })
+        await decrementRepositoryCount(session.user.id)
         revalidatePath("/dashboard/settings","page")
         revalidatePath("/dashboard/repository","page")
 
@@ -174,6 +176,7 @@ export async function disconnectAllRepositories(){
                 userid:session.user.id,
             }
         })
+        await resetRepositoryCount(session.user.id)
         revalidatePath("/dashboard/settings","page")
         revalidatePath("/dashboard/repository","page")
         return {

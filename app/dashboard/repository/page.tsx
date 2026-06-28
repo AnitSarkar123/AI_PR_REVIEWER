@@ -48,7 +48,15 @@ const RepositoryPageClient = () => {
 		null
 	);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 	const observerTarget = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearchQuery(searchQuery);
+		}, 200);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -80,7 +88,7 @@ const RepositoryPageClient = () => {
 
 	const allRepositories = data?.pages.flatMap((page) => page) || [];
 
-	const trimmedQuery = searchQuery.trim().toLowerCase();
+	const trimmedQuery = debouncedSearchQuery.trim().toLowerCase();
 	const filteredRepositories = allRepositories.filter(
 		(repo: Repository) =>
 			repo.name.toLowerCase().includes(trimmedQuery) ||

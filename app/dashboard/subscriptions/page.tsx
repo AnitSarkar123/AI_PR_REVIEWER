@@ -45,6 +45,7 @@ export default function SubscriptionPageClient() {
 	const [checkoutLoading, setCheckoutLoading] = useState(false);
 	const [portalLoading, setPortalLoading] = useState(false);
 	const [syncLoading, setSyncLoading] = useState(false);
+	const [isAutoSyncing, setIsAutoSyncing] = useState(false);
 
 	const searchParams = useSearchParams();
 	const success = searchParams.get("success");
@@ -59,13 +60,18 @@ export default function SubscriptionPageClient() {
 		if (success === "true") {
 			const sync = async () => {
 				try {
+					setIsAutoSyncing(true);
 					await syncSubscriptionStatus();
+					toast.success("Subscription updated! Thank you for upgrading.");
 					refetch();
 				} catch (error) {
 					console.error(
 						"Failed to sync subscription on success return",
 						error
 					);
+					toast.error("Failed to automatically sync subscription status. Please click Sync Status.");
+				} finally {
+					setIsAutoSyncing(false);
 				}
 			};
 
@@ -199,13 +205,22 @@ export default function SubscriptionPageClient() {
 				</Button>
 			</div>
 
-			{success === "true" && (
-				<Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-					<Check className="h-4 w-4 text-green-600" />
-					<AlertTitle>Success!</AlertTitle>
-					<AlertDescription>
-						Your subscription status has been updated successfully.
-						Changes may take a few moments to reflect.
+			{isAutoSyncing && (
+				<Alert className="border-primary/40 bg-primary/5 dark:bg-primary/10 animate-pulse">
+					<Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+					<AlertTitle className="font-semibold text-primary">Syncing Payment Details</AlertTitle>
+					<AlertDescription className="text-muted-foreground text-xs mt-1">
+						We are verifying your transaction with the payment provider. This will only take a moment...
+					</AlertDescription>
+				</Alert>
+			)}
+
+			{success === "true" && !isAutoSyncing && (
+				<Alert className="border-emerald-500/35 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
+					<Check className="h-4 w-4 text-emerald-500 shrink-0" />
+					<AlertTitle className="font-semibold text-emerald-700 dark:text-emerald-300">Upgrade Completed!</AlertTitle>
+					<AlertDescription className="text-muted-foreground text-xs mt-1">
+						Your account has been successfully upgraded to the Pro plan. Thank you for your support!
 					</AlertDescription>
 				</Alert>
 			)}

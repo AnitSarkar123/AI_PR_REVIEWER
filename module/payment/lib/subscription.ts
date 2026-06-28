@@ -170,6 +170,24 @@ export async function decrementRepositoryCount(userId: string): Promise<void> {
 }
 
 /**
+ * Resets the repository count for a user.
+ * @param userId - User ID.
+ */
+export async function resetRepositoryCount(userId: string): Promise<void> {
+	await prisma.userUsage.upsert({
+		where: { userId },
+		create: {
+			userId,
+			repositoryCount: 0,
+			reviewCounts: {},
+		},
+		update: {
+			repositoryCount: 0,
+		},
+	});
+}
+
+/**
  * Increments the review count for a specific repository.
  * @param userId - User ID.
  * @param repositoryId - Repository ID.
