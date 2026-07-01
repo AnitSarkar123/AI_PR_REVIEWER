@@ -10,6 +10,7 @@ import {
 	LogOut,
 	Star,
 	Crown,
+	Activity,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -65,6 +66,11 @@ const AppSidebar = () => {
 			title: "Subscriptions",
 			url: "/dashboard/subscriptions",
 			icon: Crown,
+		},
+		{
+			title: "Webhooks",
+			url: "/dashboard/webhooks",
+			icon: Activity,
 		},
 		{
 			title: "Settings",
