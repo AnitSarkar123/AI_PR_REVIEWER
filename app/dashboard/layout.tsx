@@ -5,9 +5,10 @@ import {
 	SidebarInset,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-// import { AppSidebar } from "@/components/app-sidebar";
 import AppSidebar from "@/components/app-sidebar"
 import { requireAuth } from '@/module/auth/utils/auth-utils';
+import { ErrorBoundary } from '@/components/error-boundary';
+
 const Dashboardlayout = async(
     {children }:{children : React.ReactNode}
 ) => {
@@ -23,11 +24,12 @@ const Dashboardlayout = async(
                 <h1 className='text-xl font-semibold text-foreground'>Dashboard</h1>
             </header>
             <main className='flex-1 overflow-auto p-4 md:p-6'>
-                {children}
+                <ErrorBoundary>
+                    {children}
+                </ErrorBoundary>
             </main>
         
         </SidebarInset>
-        
       
     </SidebarProvider>
   )
