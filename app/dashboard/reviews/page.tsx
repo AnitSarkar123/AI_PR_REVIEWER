@@ -32,11 +32,13 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ExternalLink, Clock, CheckCircle2, XCircle, Clipboard, ClipboardCheck } from "lucide-react";
+import { ExternalLink, Clock, CheckCircle2, XCircle, Clipboard, ClipboardCheck, RefreshCw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 
 import { getReviews } from "@/module/review/actions";
+import { useReviewPoller } from "@/module/review/hooks/use-review-poller";
+import { PendingReviewsBadge } from "@/module/review/components/pending-reviews-badge";
 
 function parseInline(text: string) {
 	// Parse basic bold (**text**) and inline code (`code`)
@@ -185,6 +187,8 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
 }
 
 export default function ReviewsPageClient() {
+	useReviewPoller();
+
 	const { data: reviews, isLoading } = useQuery({
 		queryKey: ["reviews"],
 		queryFn: async () => {
@@ -195,13 +199,16 @@ export default function ReviewsPageClient() {
 	if (isLoading) {
 		return (
 			<div className="space-y-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
-						Review History
-					</h1>
-					<p className="text-muted-foreground">
-						View all AI code reviews
-					</p>
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">
+							Review History
+						</h1>
+						<p className="text-muted-foreground">
+							View all AI code reviews
+						</p>
+					</div>
+					<PendingReviewsBadge />
 				</div>
 				<div className="animate-pulse space-y-4">
 					<div className="h-28 bg-muted rounded-xl" />
@@ -213,13 +220,16 @@ export default function ReviewsPageClient() {
 
 	return (
 		<div className="space-y-4">
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight">
-					Review History
-				</h1>
-				<p className="text-muted-foreground">
-					View all AI code reviews
-				</p>
+			<div className="flex items-center justify-between">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight">
+						Review History
+					</h1>
+					<p className="text-muted-foreground">
+						View all AI code reviews
+					</p>
+				</div>
+				<PendingReviewsBadge />
 			</div>
 
 			{reviews?.length === 0 ? (
