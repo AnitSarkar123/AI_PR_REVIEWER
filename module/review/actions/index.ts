@@ -5,7 +5,25 @@ import { auth } from "@/lib/auth";
 
 import { headers } from "next/headers";
 
-export async function getReviews() {
+export interface ReviewFilters {
+	status?: "pending" | "completed" | "failed" | "all";
+	sortBy?: "newest" | "oldest";
+	searchQuery?: string;
+	page?: number;
+	perPage?: number;
+}
+
+export interface PaginatedResult<T> {
+	data: T[];
+	total: number;
+	page: number;
+	perPage: number;
+	totalPages: number;
+}
+
+export async function getReviews(
+	filters: ReviewFilters = {}
+): Promise<PaginatedResult<any>> {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -14,20 +32,50 @@ export async function getReviews() {
 		throw new Error("Unauthorized");
 	}
 
-	const reviews = await prisma.review.findMany({
-		where: {
-			repository: {
-				userid: session.user.id,
-			},
-		},
-		include: {
-			repository: true,
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 50,
-	});
+	const {
+		status = "all",
+		sortBy = "newest",
+		searchQuery = "",
+		page = 1,
+		perPage = 10,
+	} = filters;
 
-	return reviews;
+	const where: any = {
+		repository: {
+			userid: session.user.id,
+		},
+	};
+
+	if (status !== "all") {
+		where.status = status;
+	}
+
+	if (searchQuery.trim()) {
+		where.prTitle = {
+			contains: searchQuery.trim(),
+		};
+	}
+
+	const [total, reviews] = await Promise.all([
+		prisma.review.count({ where }),
+		prisma.review.findMany({
+			where,
+			include: {
+				repository: true,
+			},
+			orderBy: {
+				createdAt: sortBy === "oldest" ? "asc" : "desc",
+			},
+			skip: (page - 1) * perPage,
+			take: perPage,
+		}),
+	]);
+
+	return {
+		data: reviews,
+		total,
+		page,
+		perPage,
+		totalPages: Math.ceil(total / perPage),
+	};
 }
