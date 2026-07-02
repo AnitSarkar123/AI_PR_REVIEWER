@@ -265,12 +265,18 @@ export async function updateUserTier(
 	status: SubscriptionStatus,
 	polarSubscriptionId?: string
 ): Promise<void> {
+	const updateData: Record<string, string | null> = {
+		subscriptionTier: tier,
+		subscriptionStatus: status,
+	};
+
+	if (polarSubscriptionId !== undefined) {
+		updateData.polarSubscriptionId = polarSubscriptionId;
+	}
+
 	await prisma.user.update({
 		where: { id: userId },
-		data: {
-			subscriptionTier: tier,
-			subscriptionStatus: status,
-		},
+		data: updateData,
 	});
 }
 
