@@ -37,6 +37,7 @@ import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 
 import { getReviews } from "@/module/review/actions";
+import { ReviewExportButton } from "@/module/review/components/review-export-button";
 
 function parseInline(text: string) {
 	// Parse basic bold (**text**) and inline code (`code`)
@@ -341,6 +342,7 @@ export default function ReviewsPageClient() {
 												</ScrollArea>
 
 												<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
+													<ReviewExportButton reviewId={review.id} />
 													<Button variant="outline" size="sm" asChild>
 														<a
 															href={review.prUrl}
