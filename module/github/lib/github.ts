@@ -1,93 +1,5 @@
 import { Octokit } from 'octokit';
-import { auth } from '@/lib/auth';
-import prisma from '@/lib/db';
-import { headers } from 'next/headers';
-import { error } from 'node:console';
-import { get } from 'node:http';
-import { title } from 'node:process';
-import { CardDescription } from '@/components/ui/card';
-// import { postReviewComment } from '@/module/github/lib/github';
-
-//getting github access token
-
-// interface ContributionData {
-//     user: {
-//         contributionsCollection: {
-//             contributionCalendar: {
-//                 totalContributions: number;
-//                 weeks: {
-//                     contributionDays: {
-//                         contributionCount: number;
-//                         date: string | Date;
-//                         color: string;
-//                     }[];
-//                 }[];
-//             };
-//         };
-//     };
-// }
-
-export const  getGithubToken =async()=>{
-    const session =await auth.api.getSession({
-        headers: await headers()
-    })
-    if(!session) {
-        throw new Error("Unauthorized")
-    }
-    const account = await prisma.account.findFirst({
-        where:{
-            userId: session.user.id,
-            providerId:"github"
-        }
-    })
-    if(!account?.accessToken){
-        throw new Error("Account not found")
-    }
-    return account.accessToken
-    
-
-}
-
-export async function fetchUserContribution(
-    token:string,
-    username:string
-){
-    const octokit = new Octokit({
-        auth: token
-    })
-const query =`
-query($username: String!) {
-    user(login: $username) {
-      contributionsCollection {
-        contributionCalendar {
-            totalContributions
-                weeks {
-                    contributionDays {
-                        contributionCount
-                        date
-                        color
-                    }           
-                }
-            
-        }      
-      }
-    }
-  }
-
-`
-    try{
-        const response: any = await octokit.graphql(query,{
-            username
-        })
-        return response.user.contributionsCollection.contributionCalendar
-    }
-    catch(error){
-        console.error("Error fetching user contribution data:", error);
-        throw error;
-    }
-
-}
-
+import { getGithubToken } from './token';
 
 export const getRepositories = async (page: number = 1, perPage: number = 10) => {
     const token = await getGithubToken()
@@ -100,86 +12,10 @@ export const getRepositories = async (page: number = 1, perPage: number = 10) =>
         visibility: "all",
         per_page: perPage,
         page: page
-
     })
     return data
 }
 
-export const createWebhook = async (owner: string, repo: string) => {
-    const token = await getGithubToken()
-    const octokit = new Octokit({
-        auth: token
-    })
-    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/api/webhooks/github`
-    const { data: hooks } = await octokit.rest.repos.listWebhooks({
-        owner,
-        repo
-    })
-    const existingHook = hooks.find(hook => hook.config.url === webhookUrl);
-    if (existingHook) {
-        console.log("Webhook already exists")
-        return existingHook
-    }
-    const { data } = await octokit.rest.repos.createWebhook({
-        owner,
-        repo,
-        config: {
-            url: webhookUrl,
-            content_type: "json"
-        },
-        events: ["pull_request"]
-    })
-    return data;
-
-}
-
-export const deleteWebhook = async (owner: string, repo: string) => {
-    const token = await getGithubToken()
-    const octokit = new Octokit({
-        auth: token
-    })
-    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_BASE_URL}/api/webhooks/github`
-    try {
-        const { data: hooks } = await octokit.rest.repos.listWebhooks({
-            owner,
-            repo
-        })
-        const hookToDelete = hooks.find(hook => hook.config.url === webhookUrl);
-        if (hookToDelete) {
-            await octokit.rest.repos.deleteWebhook({
-                owner,
-                repo,
-                hook_id: hookToDelete.id
-            })
-            return true
-            //console.log("Webhook deleted successfully")  
-        }
-        return false;
-
-    } catch (error) {
-        console.error("Error deleting webhook:", error);
-        return false
-
-    }
-
-}
-/**
- * Recursively fetches contents of all files in a repository.
- *
- * @param token - GitHub access token.
- * @param owner - Repository owner.
- * @param repo - Repository name.
- * @param path - Current path to fetch (default: root).
- * @returns Array of file objects with path and decoded content.
- */
-/**
- * Recursively fetches all file contents from a GitHub repository
- * @param token - GitHub access token
- * @param owner - Repository owner username
- * @param repo - Repository name
- * @param path - Directory path to start from (default: root)
- * @returns Promise resolving to array of file objects with path and content
- */
 export async function getRepoFileContents(
     token: string,
     owner: string,
@@ -200,7 +36,6 @@ export async function getRepoFileContents(
     });
 
     if (!Array.isArray(data)) {
-        // It's a file
         if (data.type === "file" && data.content) {
             return [
                 {
@@ -229,8 +64,6 @@ export async function getRepoFileContents(
                 fileData.type === "file" &&
                 fileData.content
             ) {
-                // Filter out non-code files if needed (images, etc)
-                // For now lets include everything that looks like text
                 if (
                     !item.path.match(
                         /\.(png|jpg|jpeg|gif|svg|ico|pdf|zip|tar|gz)$/i
@@ -266,7 +99,6 @@ export async function getPullRequestDiff(token: string, owner: string, repo: str
         owner,
         repo,
         pull_number: prNumber,
-
     });
 
     const { data: diff } = await octokit.rest.pulls.get({
@@ -276,7 +108,6 @@ export async function getPullRequestDiff(token: string, owner: string, repo: str
         mediaType: {
             format: "diff"
         }
-
     })
     return {
         diff: diff as unknown as string,
@@ -298,8 +129,5 @@ export async function postReviewComment(
         repo,
         issue_number: prNumber,
         body: `##🤖 AI Code Review\n\n${review}\n\n --\n*Powered by AI PR Reviewer*`,
-
     })
-
 }
-
