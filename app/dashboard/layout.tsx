@@ -5,9 +5,10 @@ import {
 	SidebarInset,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-// import { AppSidebar } from "@/components/app-sidebar";
 import AppSidebar from "@/components/app-sidebar"
 import { requireAuth } from '@/module/auth/utils/auth-utils';
+import { KeyboardShortcutsProvider } from '@/components/keyboard-shortcuts-provider';
+import { KeyboardShortcutsHint } from '@/components/keyboard-shortcuts-hint';
 const Dashboardlayout = async(
     {children }:{children : React.ReactNode}
 ) => {
@@ -21,13 +22,17 @@ const Dashboardlayout = async(
                 <SidebarTrigger className='-ml-1'/>
                 <Separator orientation='vertical' className='mx-2 h-4' />
                 <h1 className='text-xl font-semibold text-foreground'>Dashboard</h1>
+                <div className='ml-auto flex items-center gap-1'>
+                    <KeyboardShortcutsHint />
+                </div>
             </header>
             <main className='flex-1 overflow-auto p-4 md:p-6'>
-                {children}
+                <KeyboardShortcutsProvider>
+                    {children}
+                </KeyboardShortcutsProvider>
             </main>
         
         </SidebarInset>
-        
       
     </SidebarProvider>
   )
