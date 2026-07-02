@@ -1,16 +1,13 @@
 import { pineconeindex } from "@/lib/pinecone";
-import {embed} from "ai";
-import {google} from "@ai-sdk/google"
-// import * as path from 'node:path';
-
-// import { boolean } from "better-auth";
+import { embed } from "ai";
+import { google } from "@ai-sdk/google"
+import { withRetry, isRateLimitError } from "@/lib/retry";
 
 export async function generateEmbeddings(text: string) {
-    const {embedding} = await embed({
+    const { embedding } = await embed({
         model: google.embeddingModel("gemini-embedding-001"),
         value: text,
     })
-    console.log("Generated embedding:", embedding);
     return embedding;
 }
 
@@ -38,32 +35,39 @@ export async function indexCodebase(repoId: string,files:{path:string,content:st
         }
 
     }
-    if(vectors.length > 0){
+    if (vectors.length > 0) {
         const batchSize = 100;
-        for(let i=0;i<vectors.length;i+=batchSize){
-            const batch = vectors.slice(i,i+batchSize);
-
-            // Index the batch in Pinecone
-            await pineconeindex.upsert({ records: batch });
+        for (let i = 0; i < vectors.length; i += batchSize) {
+            const batch = vectors.slice(i, i + batchSize);
+            await withRetry(
+                () => pineconeindex.upsert({ records: batch }),
+                {
+                    maxRetries: 3,
+                    baseDelayMs: 2000,
+                    shouldRetry: isRateLimitError,
+                }
+            );
         }
-        console.log(`Indexed ${vectors.length} files for repository ${repoId}`);
-
     }
-
-
 }
-export async function retrieveContext(query: string, repoId:string,topK: number = 5) {
+
+export async function retrieveContext(query: string, repoId: string, topK: number = 5) {
     const embedding = await generateEmbeddings(query);
-    const results = await pineconeindex.query({
-        vector: embedding,
-        topK,
-        filter: {
-            repoId
-        },
-        includeMetadata:true})
-        return results.matches.map(match => match.metadata?.content as string).filter(Boolean)
-    
-    }
+    const results = await withRetry(
+        () => pineconeindex.query({
+            vector: embedding,
+            topK,
+            filter: { repoId },
+            includeMetadata: true,
+        }),
+        {
+            maxRetries: 3,
+            baseDelayMs: 1000,
+            shouldRetry: isRateLimitError,
+        }
+    );
+    return results.matches.map(match => match.metadata?.content as string).filter(Boolean)
+}
 
 
 
