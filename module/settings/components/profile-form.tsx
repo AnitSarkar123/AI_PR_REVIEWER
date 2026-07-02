@@ -11,15 +11,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 
 import { getUserProfile, updateUserProfile } from "../actions";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function ProfileForm() {
 	const queryClient = useQueryClient();
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
+
+	const initialValues = useMemo(() => ({ name: "", email: "" }), []);
+	const hasUnsavedChanges = name !== initialValues.name || email !== initialValues.email;
+	useUnsavedChanges(hasUnsavedChanges);
+
+	const handleReset = () => {
+		if (profile) {
+			setName(profile.name || "");
+			setEmail(profile.email || "");
+		}
+	};
 
 	const { data: profile, isLoading } = useQuery({
 		queryKey: ["user-profile"],
@@ -32,8 +45,10 @@ export function ProfileForm() {
 		if (profile) {
 			setName(profile.name || "");
 			setEmail(profile.email || "");
+			initialValues.name = profile.name || "";
+			initialValues.email = profile.email || "";
 		}
-	}, [profile]);
+	}, [profile, initialValues]);
 
 	const updateMutation = useMutation({
 		mutationFn: async (data: { name: string; email: string }) => {
@@ -110,11 +125,30 @@ export function ProfileForm() {
 						/>
 					</div>
 
-					<Button type="submit" disabled={updateMutation.isPending}>
-						{updateMutation.isPending
-							? "Saving..."
-							: "Save Changes"}
-					</Button>
+					{hasUnsavedChanges && (
+						<div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2">
+							<AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+							<span>You have unsaved changes</span>
+						</div>
+					)}
+					<div className="flex items-center gap-3">
+						{hasUnsavedChanges && (
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={handleReset}
+								disabled={updateMutation.isPending}
+							>
+								Reset
+							</Button>
+						)}
+						<Button type="submit" disabled={updateMutation.isPending || !hasUnsavedChanges}>
+							{updateMutation.isPending
+								? "Saving..."
+								: "Save Changes"}
+						</Button>
+					</div>
 				</form>
 			</CardContent>
 		</Card>

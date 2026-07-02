@@ -4,8 +4,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import prisma from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { Session, Repository } from '../../../lib/generated/prisma/browser';
-import { success } from "better-auth"
+
 import { deleteWebhook } from "@/module/github/lib/github"
 import { decrementRepositoryCount, resetRepositoryCount } from "@/module/payment/lib/subscription"
 
@@ -131,7 +130,6 @@ export async function disconnectRepository(repositoryId: string){
         await prisma.repository.delete({
             where:{
                 id: repositoryId,
-                userid:session.user.id
             }
         })
         await decrementRepositoryCount(session.user.id)
