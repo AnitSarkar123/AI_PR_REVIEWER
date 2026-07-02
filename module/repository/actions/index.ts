@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { createWebhook, getRepositories } from "@/module/github/lib/github"
 import { inngest } from "@/inngest/client"
-import { canConnectRepository, decrementRepositoryCount, incrementRepositoryCount } from "@/module/payment/lib/subscription"
+import { canConnectRepository, incrementRepositoryCount } from "@/module/payment/lib/subscription"
 export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
     const session = await auth.api.getSession({
         headers: await headers()
