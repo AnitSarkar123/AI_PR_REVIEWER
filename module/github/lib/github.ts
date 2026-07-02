@@ -2,10 +2,6 @@ import { Octokit } from 'octokit';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { headers } from 'next/headers';
-import { error } from 'node:console';
-import { get } from 'node:http';
-import { title } from 'node:process';
-import { CardDescription } from '@/components/ui/card';
 // import { postReviewComment } from '@/module/github/lib/github';
 
 //getting github access token
@@ -120,12 +116,14 @@ export const createWebhook = async (owner: string, repo: string) => {
         console.log("Webhook already exists")
         return existingHook
     }
+    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || "";
     const { data } = await octokit.rest.repos.createWebhook({
         owner,
         repo,
         config: {
             url: webhookUrl,
-            content_type: "json"
+            content_type: "json",
+            secret: webhookSecret || undefined,
         },
         events: ["pull_request"]
     })
