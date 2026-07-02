@@ -89,7 +89,12 @@ AI-powered GitHub code review platform that automatically reviews pull requests,
 `````text
 Repository
 └──ai_pr_reviewer/
+    ├── .env.example
+    ├── .gitignore
     ├── README.md
+    ├── CONTRIBUTING.md
+    ├── SECURITY.md
+    ├── CODE_OF_CONDUCT.md
     ├── components.json
     ├── css.d.ts
     ├── eslint.config.mjs
@@ -98,6 +103,7 @@ Repository
     ├── postcss.config.mjs
     ├── prisma.config.ts
     ├── tsconfig.json
+    ├── bun.lock
     ├── app/
     │   ├── globals.css
     │   ├── layout.tsx
@@ -129,11 +135,11 @@ Repository
     │   ├── app-sidebar.tsx
     │   ├── providers/
     │   │   ├── query-provider.tsx
-    │   │   ├── theme-provider.tsx
-    │   │   └── toaster-provider.tsx
-    │   └── ui/
+    │   │   └── theme-provider.tsx
+    │   └── ui/ (40+ shadcn components)
     ├── hooks/
-    │   └── use-mobile.ts
+    │   ├── use-mobile.ts
+    │   └── use-unsaved-changes.ts
     ├── inngest/
     │   ├── client.ts
     │   └── functions/
@@ -145,61 +151,44 @@ Repository
     │   ├── db.ts
     │   ├── pinecone.ts
     │   ├── utils.ts
-    │   └── generated/
-    │       └── prisma/
-    │           ├── browser.ts
-    │           ├── client.ts
-    │           ├── commonInputTypes.ts
-    │           ├── enums.ts
-    │           ├── models.ts
-    │           ├── internal/
-    │           │   ├── class.ts
-    │           │   ├── prismaNamespace.ts
-    │           │   └── prismaNamespaceBrowser.ts
-    │           └── models/
-    │               ├── UserUsage.ts
-    │               └── Verification.ts
+    │   ├── webhook-verify.ts
+    │   └── generated/prisma/
     ├── module/
     │   ├── ai/
-    │   │   ├── actions/
-    │   │   │   └── index.ts
-    │   │   └── lib/
-    │   │       └── rag.ts
+    │   │   ├── actions/index.ts
+    │   │   └── lib/rag.ts
     │   ├── auth/
     │   │   ├── components/
     │   │   │   ├── login-ui.tsx
     │   │   │   └── logout.tsx
-    │   │   └── utils/
-    │   │       └── auth-utils.ts
+    │   │   └── utils/auth-utils.ts
     │   ├── dashboard/
     │   │   ├── actions/
-    │   │   │   └── index.ts
+    │   │   │   ├── index.ts
+    │   │   │   └── recent-activity.ts
     │   │   └── components/
-    │   │       └── contribution-graph.tsx
+    │   │       ├── contribution-graph.tsx
+    │   │       └── recent-activity-card.tsx
     │   ├── github/
     │   │   └── lib/
-    │   │       └── github.ts
+    │   │       ├── github.ts
+    │   │       ├── token.ts
+    │   │       ├── webhook.ts
+    │   │       └── contributions.ts
     │   ├── payment/
-    │   │   ├── actions/
-    │   │   │   └── index.ts
-    │   │   ├── config/
-    │   │   │   └── polar.ts
-    │   │   └── lib/
-    │   │       └── subscription.ts
+    │   │   ├── actions/index.ts
+    │   │   ├── config/polar.ts
+    │   │   └── lib/subscription.ts
     │   ├── repository/
-    │   │   ├── actions/
-    │   │   │   └── index.ts
-    │   │   ├── components/
-    │   │   │   └── repository-skeleton.tsx
+    │   │   ├── actions/index.ts
+    │   │   ├── components/repository-skeleton.tsx
     │   │   └── hooks/
     │   │       ├── use-connect-repository.ts
     │   │       └── use-repositories.ts
     │   ├── review/
-    │   │   └── actions/
-    │   │       └── index.ts
+    │   │   └── actions/index.ts
     │   └── settings/
-    │       ├── actions/
-    │       │   └── index.ts
+    │       ├── actions/index.ts
     │       └── components/
     │           ├── profile-form.tsx
     │           └── repository-list.tsx
@@ -208,25 +197,19 @@ Repository
     │   └── migrations/
     │       ├── migration_lock.toml
     │       ├── 20260329133431_test/
-    │       │   └── migration.sql
     │       ├── 20260329135849_authentication/
-    │       │   └── migration.sql
     │       ├── 20260402162416_repository_model_added/
-    │       │   └── migration.sql
     │       ├── 20260413093751_added_review_and_userusage/
-    │       │   └── migration.sql
     │       ├── 20260417153032_update/
-    │       │   └── migration.sql
     │       └── 20260426154209_added_polar_ids/
-    │           └── migration.sql
+    ├── public/
     └── .github/
         ├── ISSUE_TEMPLATE/
         │   ├── bug_report.md
         │   ├── documentation.md
         │   └── feature_request.md
         └── PULL_REQUEST_TEMPLATE/
-            └── PULL_REQUEST_TEMPLATE.
-
+            └── PULL_REQUEST_TEMPLATE.md
 `````
 
 ---
