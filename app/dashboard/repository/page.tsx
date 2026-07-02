@@ -136,8 +136,8 @@ const RepositoryPageClient = () => {
 						Manage and view all your GitHub repositories
 					</p>
 				</div>
-				<p className="text-destructive text-center">
-					Failed to load repositories
+				<p className="text-destructive text-center" role="alert">
+					Failed to load repositories. Please check your connection and try again.
 				</p>
 			</div>
 		);
@@ -155,8 +155,10 @@ const RepositoryPageClient = () => {
 			</div>
 
 			<div className="relative">
-				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+				<label htmlFor="repo-search" className="sr-only">Search repositories</label>
 				<Input
+					id="repo-search"
 					placeholder="Search repositories..."
 					className="pl-8"
 					value={searchQuery}

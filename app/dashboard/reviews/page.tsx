@@ -252,7 +252,7 @@ export default function ReviewsPageClient() {
 													variant="default"
 													className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20"
 												>
-													<CheckCircle2 className="h-3 w-3" />
+													<CheckCircle2 className="h-3 w-3" aria-hidden="true" />
 													Completed
 												</Badge>
 											)}
@@ -261,7 +261,7 @@ export default function ReviewsPageClient() {
 													variant="destructive"
 													className="gap-1 bg-destructive/10 text-destructive border-destructive/20"
 												>
-													<XCircle className="h-3 w-3" />
+													<XCircle className="h-3 w-3" aria-hidden="true" />
 													Failed
 												</Badge>
 											)}
@@ -270,7 +270,7 @@ export default function ReviewsPageClient() {
 													variant="secondary"
 													className="gap-1"
 												>
-													<Clock className="h-3 w-3" />
+													<Clock className="h-3 w-3" aria-hidden="true" />
 													Pending
 												</Badge>
 											)}
