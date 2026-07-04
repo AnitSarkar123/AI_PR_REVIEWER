@@ -1,12 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-// import {
-// 	getRemainingLimits,
-// 	updateUserTier,
-// } from "@/modules/payment/lib/subscription";
 import { getRemainingLimits, updateUserTier } from "@/module/payment/lib/subscription";
-// import { polarClient } from "@/modules/payment/config/polar";
 import { polarClient } from "@/module/payment/config/polar";
 import prisma from "@/lib/db";
 
