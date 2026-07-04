@@ -36,12 +36,14 @@ const Mainpage = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: async () => getDashboardStatus(),
+    staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false
 
   })
   const { data: monthlyActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["monthly-activity"],
     queryFn: async () => getMonthlyActivity(),
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   })
 
