@@ -4,7 +4,6 @@ import {prismaAdapter } from "better-auth/adapters/prisma";
 import { polarClient } from "@/module/payment/config/polar";
 import {polar,checkout,portal,usage ,webhooks} from "@polar-sh/better-auth"
 import { updatePolarCustomerId, updateUserTier } from "@/module/payment/lib/subscription";
-// import { Payload } from './generated/prisma/internal/prismaNamespace';
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
         provider: "postgresql", // or "mysql", "postgresql", ...etc
