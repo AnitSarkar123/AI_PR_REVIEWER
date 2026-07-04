@@ -54,7 +54,7 @@ const RepositoryPageClient = () => {
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearchQuery(searchQuery);
-		}, 200);
+		}, 300);
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 

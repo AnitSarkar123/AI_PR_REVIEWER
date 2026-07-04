@@ -5,7 +5,6 @@ import {
 	SidebarInset,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-// import { AppSidebar } from "@/components/app-sidebar";
 import AppSidebar from "@/components/app-sidebar"
 import { requireAuth } from '@/module/auth/utils/auth-utils';
 const Dashboardlayout = async(
