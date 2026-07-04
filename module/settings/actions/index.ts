@@ -6,7 +6,7 @@ import prisma from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { Session, Repository } from '../../../lib/generated/prisma/browser';
 import { success } from "better-auth"
-import { deleteWebhook } from "@/module/github/lib/github"
+import { deleteWebhook } from "@/module/github/lib/webhook"
 import { decrementRepositoryCount, resetRepositoryCount } from "@/module/payment/lib/subscription"
 
 export async function getUserProfile(){
