@@ -1,5 +1,24 @@
 import { Octokit } from 'octokit';
-import { getGithubToken } from './token';
+
+export const getGithubToken = async () => {
+    const { getGithubToken: getGithubTokenFn } = await import('./token');
+    return getGithubTokenFn();
+};
+
+export const fetchUserContribution = async (token: string, username: string) => {
+    const { fetchUserContribution: fetchUserContributionFn } = await import('./contributions');
+    return fetchUserContributionFn(token, username);
+};
+
+export const createWebhook = async (owner: string, repo: string) => {
+    const { createWebhook: createWebhookFn } = await import('./webhook');
+    return createWebhookFn(owner, repo);
+};
+
+export const deleteWebhook = async (owner: string, repo: string) => {
+    const { deleteWebhook: deleteWebhookFn } = await import('./webhook');
+    return deleteWebhookFn(owner, repo);
+};
 
 export const getRepositories = async (page: number = 1, perPage: number = 10) => {
     const token = await getGithubToken()
