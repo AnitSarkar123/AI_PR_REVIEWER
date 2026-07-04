@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, Trash2, AlertTriangle } from "lucide-react";
+import { ExternalLink, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -174,9 +174,14 @@ export function RepositoryList() {
 											disconnectAllMutation.isPending
 										}
 									>
-										{disconnectAllMutation.isPending
-											? "Disconnecting..."
-											: "Disconnect All"}
+										{disconnectAllMutation.isPending ? (
+											<span className="flex items-center gap-2">
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Disconnecting...
+											</span>
+										) : (
+											"Disconnect All"
+										)}
 									</AlertDialogAction>
 								</AlertDialogFooter>
 							</AlertDialogContent>
@@ -254,9 +259,14 @@ export function RepositoryList() {
 													disconnectMutation.isPending
 												}
 											>
-												{disconnectMutation.isPending
-													? "Disconnecting..."
-													: "Disconnect"}
+												{disconnectMutation.isPending ? (
+													<span className="flex items-center gap-2">
+														<Loader2 className="h-4 w-4 animate-spin" />
+														Disconnecting...
+													</span>
+												) : (
+													"Disconnect"
+												)}
 											</AlertDialogAction>
 										</AlertDialogFooter>
 									</AlertDialogContent>

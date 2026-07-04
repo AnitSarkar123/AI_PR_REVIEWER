@@ -243,9 +243,28 @@ const RepositoryPageClient = () => {
 				))}
 			</div>
 
+			{filteredRepositories.length === 0 && !isLoading && (
+				<Card>
+					<CardContent className="pt-6">
+						<div className="text-center py-8 space-y-2">
+							<p className="text-muted-foreground">
+								{trimmedQuery
+									? `No repositories match "${trimmedQuery}"`
+									: "No repositories found"}
+							</p>
+							{trimmedQuery && (
+								<Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+									Clear Search
+								</Button>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
 			<div ref={observerTarget} className="py-4">
 				{isFetchingNextPage && <RepositoryListSkeleton />}
-				{!hasNextPage && allRepositories.length > 0 && (
+				{!hasNextPage && allRepositories.length > 0 && filteredRepositories.length > 0 && (
 					<p className="text-center text-muted-foreground">
 						No more repositories
 					</p>
