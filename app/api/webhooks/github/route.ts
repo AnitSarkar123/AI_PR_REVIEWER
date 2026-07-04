@@ -1,37 +1,55 @@
 import { NextResponse, NextRequest } from 'next/server'
-// import { the } from '../../../../.next/dev/types/validator';
 import { reviewPullRequest } from '@/module/ai/actions';
+import { verifyWebhookSignature, checkRateLimit, validateWebhookPayload } from '@/lib/webhook-verify';
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json()
-        const event = req.headers.get("X-gitHub-event")
-        console.log(`[WEBHOOK] Received GitHub event: ${event}`);
-        
-        if (event == "ping") {
-            console.log(`[WEBHOOK] Ping received`);
-            return NextResponse.json({ message: "pong" }, { status: 200 })
+        const bodyText = await req.text();
+        const signature = req.headers.get("x-hub-signature-256");
+        const event = req.headers.get("x-github-event");
+        const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
+        if (!verifyWebhookSignature(bodyText, signature)) {
+            return NextResponse.json({ message: "Invalid webhook signature" }, { status: 401 })
         }
+
+        const rateLimitResult = checkRateLimit(ip);
+        if (!rateLimitResult.allowed) {
+            return NextResponse.json(
+                { message: "Rate limit exceeded. Try again later." },
+                {
+                    status: 429,
+                    headers: { "Retry-After": String(rateLimitResult.retryAfter) }
+                }
+            )
+        }
+
+        const body = JSON.parse(bodyText);
+
+        if (!validateWebhookPayload(body)) {
+            return NextResponse.json({ message: "Invalid webhook payload structure" }, { status: 400 })
+        }
+
+        if (event === "ping") {
+            return NextResponse.json({ message: "pong" }, { status: 200 })
+        }
+
         if (event === "pull_request") {
             const action = body.action;
             const prNumber = body.number;
-
             const owner = body.repository.owner.login;
             const repo = body.repository.name;
-            console.log(`[WEBHOOK] PR ${action}: ${owner}/${repo}#${prNumber}`);
-            
+
             if (action === "opened" || action === "synchronize") {
-                console.log(`[WEBHOOK] Triggering review for ${owner}/${repo}#${prNumber}`);
-                reviewPullRequest(owner, repo, prNumber).then(() => console.log(`[WEBHOOK] PR review process completed for PR ${owner}/${repo}#${prNumber}`)).catch((error) => console.log(`[WEBHOOK] Error in PR review process of ${owner}/${repo}#${prNumber}`, error))
+                reviewPullRequest(owner, repo, prNumber)
+                    .then(() => console.log(`[WEBHOOK] PR review completed for ${owner}/${repo}#${prNumber}`))
+                    .catch((error) => console.error(`[WEBHOOK] PR review failed for ${owner}/${repo}#${prNumber}:`, error))
             }
-
-
         }
-        //HANDELED LATER
+
         return NextResponse.json({ message: "Event received" }, { status: 200 })
     } catch (error) {
-        console.log("[WEBHOOK] Error handling GitHub webhook:", error)
+        console.error("[WEBHOOK] Error handling GitHub webhook:", error)
         return NextResponse.json({ message: "Error handling webhook" }, { status: 500 })
     }
 }
