@@ -3,16 +3,14 @@
 import { ActivityCalendar } from "react-activity-calendar";
 import { useTheme } from "next-themes";
 import { useQuery } from "@tanstack/react-query";
+import { RefreshCw, GitCommit } from "lucide-react";
 
-// import { getContributionStats } from "@/modules/dashboard/actions";
 import { getContributionStats } from "../actions";
-
-
 
 const ContributionGraph = () => {
 	const { theme } = useTheme();
 
-	const { data, isLoading } = useQuery({
+	const { data, isLoading, isError, refetch } = useQuery({
 		queryKey: ["contribution-graph"],
 		queryFn: async () => await getContributionStats(),
 		staleTime: 1000 * 60 * 5,
@@ -21,9 +19,34 @@ const ContributionGraph = () => {
 	if (isLoading) {
 		return (
 			<div className="w-full flex flex-col items-center justify-center p-8">
-				<div className="animate-pulse text-muted-foreground">
-					Loading contribution data...
+				<div className="flex flex-col items-center gap-3">
+					<div className="animate-pulse flex gap-1">
+						{Array.from({ length: 20 }).map((_, i) => (
+							<div key={i} className="w-3 h-3 bg-muted rounded-sm" />
+						))}
+					</div>
+					<p className="text-sm text-muted-foreground animate-pulse">
+						Loading contribution data...
+					</p>
 				</div>
+			</div>
+		);
+	}
+
+	if (isError) {
+		return (
+			<div className="w-full flex flex-col items-center justify-center p-8">
+				<GitCommit className="h-8 w-8 text-muted-foreground/40 mb-2" />
+				<p className="text-sm text-muted-foreground">
+					Failed to load contribution data
+				</p>
+				<button
+					onClick={() => refetch()}
+					className="mt-3 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+				>
+					<RefreshCw className="h-3 w-3" />
+					Try again
+				</button>
 			</div>
 		);
 	}
@@ -31,9 +54,13 @@ const ContributionGraph = () => {
 	if (!data || !data.contributions.length) {
 		return (
 			<div className="w-full flex flex-col items-center justify-center p-8">
-				<div className="text-muted-foreground">
-					No contribution data available
-				</div>
+				<GitCommit className="h-8 w-8 text-muted-foreground/40 mb-2" />
+				<p className="text-sm text-muted-foreground">
+					No contribution data available yet
+				</p>
+				<p className="text-xs text-muted-foreground/60 mt-1">
+					Contributions appear once you start pushing code to GitHub
+				</p>
 			</div>
 		);
 	}

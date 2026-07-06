@@ -54,7 +54,7 @@ const RepositoryPageClient = () => {
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setDebouncedSearchQuery(searchQuery);
-		}, 200);
+		}, 300);
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
@@ -136,8 +136,8 @@ const RepositoryPageClient = () => {
 						Manage and view all your GitHub repositories
 					</p>
 				</div>
-				<p className="text-destructive text-center">
-					Failed to load repositories
+				<p className="text-destructive text-center" role="alert">
+					Failed to load repositories. Please check your connection and try again.
 				</p>
 			</div>
 		);
@@ -155,8 +155,10 @@ const RepositoryPageClient = () => {
 			</div>
 
 			<div className="relative">
-				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+				<label htmlFor="repo-search" className="sr-only">Search repositories</label>
 				<Input
+					id="repo-search"
 					placeholder="Search repositories..."
 					className="pl-8"
 					value={searchQuery}
@@ -241,9 +243,28 @@ const RepositoryPageClient = () => {
 				))}
 			</div>
 
+			{filteredRepositories.length === 0 && !isLoading && (
+				<Card>
+					<CardContent className="pt-6">
+						<div className="text-center py-8 space-y-2">
+							<p className="text-muted-foreground">
+								{trimmedQuery
+									? `No repositories match "${trimmedQuery}"`
+									: "No repositories found"}
+							</p>
+							{trimmedQuery && (
+								<Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+									Clear Search
+								</Button>
+							)}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
 			<div ref={observerTarget} className="py-4">
 				{isFetchingNextPage && <RepositoryListSkeleton />}
-				{!hasNextPage && allRepositories.length > 0 && (
+				{!hasNextPage && allRepositories.length > 0 && filteredRepositories.length > 0 && (
 					<p className="text-center text-muted-foreground">
 						No more repositories
 					</p>

@@ -1,5 +1,6 @@
 "use server"
-import { fetchUserContribution ,getGithubToken} from '@/module/github/lib/github';
+import { fetchUserContribution } from '@/module/github/lib/contributions';
+import { getGithubToken } from '@/module/github/lib/token';
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
@@ -55,21 +56,12 @@ export async function getDashboardStatus(){
         })
         const {data :user} = await octokit.rest.users.getAuthenticated()
         
-        //TODO:fetch total connected repo from db
-        // Get users github username
-		// const { data: user } = await octokit.rest.users.getAuthenticated();
-
-		const [totalRepos, totalReviews] = await Promise.all([
+        const [totalRepos, totalReviews] = await Promise.all([
 			prisma.repository.count({
 				where: {
 					userid: session.user.id,
 				},
 			}),
-			// fetchUserContribution(token, user.login),
-			// octokit.rest.search.issuesAndPullRequests({
-			// 	q: `author:${user.login} type:pr`,
-			// 	per_page: 1,
-			// }),
 			prisma.review.count({
 				where: {
 					repository: {

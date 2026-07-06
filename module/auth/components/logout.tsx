@@ -1,7 +1,6 @@
 "use client";
 
 import { signOut } from "@/lib/auth-client";
-
 import { useRouter } from "next/navigation";
 
 const Logout = ({
@@ -9,12 +8,13 @@ const Logout = ({
 	className,
 }: {
 	children: React.ReactNode;
-	className?: string ;
+	className?: string;
 }) => {
 	const router = useRouter();
 
 	return (
-		<span
+		<button
+			type="button"
 			className={className}
 			onClick={() =>
 				signOut({
@@ -27,7 +27,7 @@ const Logout = ({
 			}
 		>
 			{children}
-		</span>
+		</button>
 	);
 };
 

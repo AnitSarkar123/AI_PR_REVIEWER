@@ -30,18 +30,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
 import ContributionGraph from '../../module/dashboard/components/contribution-graph';
+import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
 
 
 const Mainpage = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: async () => getDashboardStatus(),
+    staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false
 
   })
   const { data: monthlyActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["monthly-activity"],
     queryFn: async () => getMonthlyActivity(),
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   })
 
@@ -145,7 +148,7 @@ const Mainpage = () => {
         </CardContent>
       </Card>
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Activity Overview</CardTitle>
             <CardDescription>
@@ -204,6 +207,7 @@ const Mainpage = () => {
           </CardContent>
         </Card>
 
+        <RecentActivityCard />
 
       </div>
     </div>
