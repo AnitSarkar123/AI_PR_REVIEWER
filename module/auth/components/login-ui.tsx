@@ -71,11 +71,11 @@ const LoginUI = () => {
 
 					{/* Bottom Links */}
 					<div className="mt-12 pt-8 border-t border-gray-700 flex justify-center gap-4 text-xs text-gray-500">
-						<a href="#" className="hover:text-gray-400">
+						<a href="/terms" className="hover:text-gray-400">
 							Terms of Use
 						</a>
 						<span>and</span>
-						<a href="#" className="hover:text-gray-400">
+						<a href="/privacy" className="hover:text-gray-400">
 							Privacy Policy
 						</a>
 					</div>
