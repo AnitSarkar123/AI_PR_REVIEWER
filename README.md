@@ -135,7 +135,8 @@ Repository
     │   ├── app-sidebar.tsx
     │   ├── providers/
     │   │   ├── query-provider.tsx
-    │   │   └── theme-provider.tsx
+    │   │   ├── theme-provider.tsx
+    │   │   └── toaster-provider.tsx
     │   └── ui/ (40+ shadcn components)
     ├── hooks/
     │   ├── use-mobile.ts
@@ -208,8 +209,7 @@ Repository
         │   ├── bug_report.md
         │   ├── documentation.md
         │   └── feature_request.md
-        └── PULL_REQUEST_TEMPLATE/
-            └── PULL_REQUEST_TEMPLATE.md
+        └── PULL_REQUEST_TEMPLATE.md
 `````
 
 ---

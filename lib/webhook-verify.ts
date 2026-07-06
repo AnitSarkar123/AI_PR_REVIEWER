@@ -65,9 +65,9 @@ export function checkRateLimit(ip: string): { allowed: boolean; retryAfter: numb
 }
 
 interface WebhookPayload {
-  action?: string;
-  number?: number;
-  repository?: {
+  action: string;
+  number: number;
+  repository: {
     owner: { login: string };
     name: string;
   };
