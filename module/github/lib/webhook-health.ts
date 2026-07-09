@@ -36,8 +36,8 @@ export async function checkWebhookHealth(owner: string, repo: string): Promise<W
         per_page: 1,
       });
       if (deliveries.length > 0) {
-        lastDelivery = deliveries[0].deliveredAt;
-        lastResponse = deliveries[0].statusCode;
+        lastDelivery = deliveries[0].delivered_at;
+        lastResponse = deliveries[0].status_code;
       }
     } catch {
       // deliveries may not be available for all tokens
