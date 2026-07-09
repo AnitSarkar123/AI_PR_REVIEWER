@@ -19,15 +19,27 @@ const ContributionGraph = () => {
 	if (isLoading) {
 		return (
 			<div className="w-full flex flex-col items-center justify-center p-8">
-				<div className="flex flex-col items-center gap-3">
-					<div className="animate-pulse flex gap-1">
-						{Array.from({ length: 20 }).map((_, i) => (
-							<div key={i} className="w-3 h-3 bg-muted rounded-sm" />
+				<div className="space-y-4 w-full max-w-2xl">
+					<div className="flex justify-center gap-1">
+						{Array.from({ length: 53 }).map((_, i) => (
+							<div key={i} className="flex flex-col gap-1">
+								{Array.from({ length: 7 }).map((_, j) => (
+									<div
+										key={j}
+										className="w-3 h-3 bg-muted rounded-sm animate-pulse"
+										style={{
+											animationDelay: `${(i * 7 + j) * 20}ms`,
+											opacity: Math.max(0.2, 1 - Math.random() * 0.5),
+										}}
+									/>
+								))}
+							</div>
 						))}
 					</div>
-					<p className="text-sm text-muted-foreground animate-pulse">
-						Loading contribution data...
-					</p>
+					<div className="flex items-center justify-center gap-2">
+						<div className="h-3 w-24 bg-muted rounded animate-pulse" />
+						<div className="h-3 w-32 bg-muted rounded animate-pulse" />
+					</div>
 				</div>
 			</div>
 		);
