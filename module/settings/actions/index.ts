@@ -30,7 +30,7 @@ export async function getUserProfile(){
         })
         return user
     } catch (error) {
-        console.log("Error fetching user profile:", error)
+        console.error("Error fetching user profile:", error)
         throw new Error("Failed to fetch user profile")
     }
 }
@@ -68,7 +68,7 @@ export async function updateUserProfile(data:{
 
         
     } catch (error) {
-        console.log("Error updating user profile:", error)
+        console.error("Error updating user profile:", error)
         return {
             success: false,
             user: null

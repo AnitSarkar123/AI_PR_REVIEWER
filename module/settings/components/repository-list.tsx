@@ -66,7 +66,7 @@ export function RepositoryList() {
 				toast.error(result?.error || "Failed to disconnect repository");
 			}
 		},
-		onError: (error: any) => {
+		onError: (error: Error) => {
 			console.error("Failed to disconnect repository:", error);
 			toast.error("Failed to disconnect repository");
 		},

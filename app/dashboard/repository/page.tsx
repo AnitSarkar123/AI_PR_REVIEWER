@@ -13,11 +13,8 @@ import { Input } from "@/components/ui/input";
 import { ExternalLink, Star, Search } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
-// import { useRepositories } from "@/modules/repository/hooks/use-repositories";
 import { useRepositories } from "@/module/repository/hooks/use-repositories";
-// import { RepositoryListSkeleton } from "@/modules/repository/components/repository-skeleton";
 import { RepositoryListSkeleton } from "@/module/repository/components/repository-skeleton";
-// import { useConnectRepository } from "@/modules/repository/hooks/use-connect-repository";
 import { useConnectRepository } from "@/module/repository/hooks/use-connect-repository";
 
 interface Repository {
@@ -167,7 +164,7 @@ const RepositoryPageClient = () => {
 			</div>
 
 			<div className="grid gap-4">
-				{filteredRepositories.map((repo: any) => (
+				{filteredRepositories.map((repo: Repository) => (
 					<Card
 						key={repo.id}
 						className="hover:shadow-md transition-shadow"

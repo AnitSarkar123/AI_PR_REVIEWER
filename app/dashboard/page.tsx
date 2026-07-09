@@ -86,7 +86,7 @@ const Mainpage = () => {
                 {isLoading ? (
                   <Skeleton className="h-8 w-20 bg-muted/65" />
                 ) : (
-                  (stats?.TotalCommits || 0).toLocaleString()
+                  (stats?.totalCommits || 0).toLocaleString()
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
