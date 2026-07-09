@@ -42,8 +42,16 @@ export async function POST(req: NextRequest) {
 
             if (action === "opened" || action === "synchronize") {
                 reviewPullRequest(owner, repo, prNumber)
-                    .then(() => console.log(`[WEBHOOK] PR review completed for ${owner}/${repo}#${prNumber}`))
-                    .catch((error) => console.error(`[WEBHOOK] PR review failed for ${owner}/${repo}#${prNumber}:`, error))
+                    .then((result) => {
+                        if (result?.success) {
+                            console.log(`[WEBHOOK] PR review requested successfully for ${owner}/${repo}#${prNumber}: ${result.message}`);
+                        } else {
+                            console.warn(`[WEBHOOK] PR review completed with issues for ${owner}/${repo}#${prNumber}: ${result?.message}`);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(`[WEBHOOK] PR review failed for ${owner}/${repo}#${prNumber}:`, error);
+                    })
             }
         }
 

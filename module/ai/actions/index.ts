@@ -83,6 +83,10 @@ export async function reviewPullRequest(owner:string, repo:string, prNumber:numb
             console.error("Failed to log review failure in database", dbError)
             
         }
+        return {
+            success:false,
+            message:`Pull request review failed: ${error instanceof Error ? error.message : String(error)}`
+        }
         
     }
 
