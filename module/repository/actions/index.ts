@@ -15,7 +15,7 @@ interface RepositoryItem {
   html_url: string;
   stargazers_count: number;
   language: string | null;
-  topics: string[];
+  topics?: string[];
   isConnected?: boolean;
 }
 export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{

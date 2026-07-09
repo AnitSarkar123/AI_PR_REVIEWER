@@ -25,7 +25,7 @@ interface Repository {
 	html_url: string;
 	stargazers_count: number;
 	language: string | null;
-	topics: string[];
+	topics?: string[];
 	isConnected?: boolean;
 }
 
@@ -229,7 +229,7 @@ const RepositoryPageClient = () => {
 									/>
 									<p>{repo.stargazers_count}</p>
 								</div>
-								{repo.topics.map((topic: string) => (
+								{repo.topics?.map((topic: string) => (
 									<Badge key={topic} variant="outline">
 										{topic}
 									</Badge>

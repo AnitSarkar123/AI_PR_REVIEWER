@@ -265,7 +265,7 @@ export default function ReviewsPageClient() {
 			) : (
 				<>
 					<div className="grid gap-4">
-						{allReviews.map((review: { id: string; prTitle: string; status: string; repository: { fullName: string }; prNumber: number; prUrl: string; createdAt: string; review: string }) =>
+						{allReviews.map((review: { id: string; prTitle: string; status: string; repository: { fullName: string }; prNumber: number; prUrl: string; createdAt: Date; review: string }) => (
 							<Card
 								key={review.id}
 								className="hover:shadow-md transition-shadow duration-200 border-border/80"

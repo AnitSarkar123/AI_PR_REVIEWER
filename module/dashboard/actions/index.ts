@@ -130,6 +130,7 @@ export async function getMonthlyActivity(){
         if(!calendar){
             return [];
         }
+        const monthlyData: MonthlyData = {};
         const monthNames =[
             "Jan",
             "Feb",
