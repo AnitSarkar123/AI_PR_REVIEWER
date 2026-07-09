@@ -34,45 +34,37 @@ export async function getUserProfile(){
         throw new Error("Failed to fetch user profile")
     }
 }
-export async function updateUserProfile(data:{
+export async function updateUserProfile(data: {
     name?: string;
-    email?: string
-}){
+    email?: string;
+}) {
     try {
-        const Session= await auth.api.getSession({
+        const Session = await auth.api.getSession({
             headers: await headers()
-        })
-        if(!Session){
-            throw new Error("Unauthorized")
+        });
+        if (!Session) {
+            throw new Error("Unauthorized");
         }
         const updatedUser = await prisma.user.update({
-            where:{
-                id: Session.user.id
-            },
-            data:{
+            where: { id: Session.user.id },
+            data: {
                 name: data.name || undefined,
                 email: data.email || undefined
             },
-            select:{
-                id: true,
-                name: true,
-                email:true
-
-            }
-        })
-        revalidatePath("/dashboard/settings","layout")
+            select: { id: true, name: true, email: true }
+        });
+        revalidatePath("/dashboard/settings", "layout");
         return {
             success: true,
             user: updatedUser
-        }
-
-        
+        };
     } catch (error) {
-        console.log("Error updating user profile:", error)
+        console.error("Error updating user profile:", error);
         return {
             success: false,
-            user: null
-        }
+            user: null,
+            error: error instanceof Error ? error.message : "Failed to update profile"
+        };
     }
 }
 
