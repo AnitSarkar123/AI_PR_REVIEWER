@@ -60,7 +60,7 @@ const RepositoryPageClient = () => {
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
-			(entries: any) => {
+			(entries: IntersectionObserverEntry[]) => {
 				if (
 					entries[0].isIntersecting &&
 					hasNextPage &&
