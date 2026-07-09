@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useCallback } from "react";
+import { useMutation } from "@tanstack/react-query";
 import {
 	Card,
 	CardContent,
@@ -30,12 +31,17 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	GitPullRequest,
+	Download,
+	RefreshCw,
+	Loader2,
 } from "lucide-react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { toast } from "sonner";
 
-import { getReviews, getReviewCount } from "@/module/review/actions";
+import { getReviews, getReviewCount, retryFailedReview } from "@/module/review/actions";
+import { useReviewPolling } from "@/hooks/use-review-polling";
 
 function parseInline(text: string) {
 	const regex = /(\*\*.*?\*\*|`.*?`)/g;
@@ -206,6 +212,7 @@ export default function ReviewsPageClient() {
 	});
 
 	const allReviews = data?.pages.flatMap((page) => page.data) || [];
+	const { pendingCount } = useReviewPolling();
 
 	if (isLoading) {
 		return (
@@ -287,13 +294,30 @@ export default function ReviewsPageClient() {
 													</Badge>
 												)}
 												{review.status === "failed" && (
-													<Badge
-														variant="destructive"
-														className="gap-1 bg-destructive/10 text-destructive border-destructive/20"
-													>
-														<XCircle className="h-3 w-3" aria-hidden="true" />
-														Failed
-													</Badge>
+													<>
+														<Badge
+															variant="destructive"
+															className="gap-1 bg-destructive/10 text-destructive border-destructive/20"
+														>
+															<XCircle className="h-3 w-3" aria-hidden="true" />
+															Failed
+														</Badge>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-5 w-5 text-muted-foreground hover:text-foreground"
+															onClick={async () => {
+																try {
+																	await retryFailedReview(review.id);
+																	toast.success("Review retry initiated");
+																} catch (e) {
+																	toast.error("Failed to retry review");
+																}
+															}}
+														>
+															<RefreshCw className="h-3 w-3" />
+														</Button>
+													</>
 												)}
 												{review.status === "pending" && (
 													<Badge
