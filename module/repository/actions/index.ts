@@ -6,6 +6,18 @@ import { createWebhook } from "@/module/github/lib/webhook"
 import { getRepositories } from "@/module/github/lib/github"
 import { inngest } from "@/inngest/client"
 import { canConnectRepository, incrementRepositoryCount } from "@/module/payment/lib/subscription"
+
+interface RepositoryItem {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  stargazers_count: number;
+  language: string | null;
+  topics?: string[];
+  isConnected?: boolean;
+}
 export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
     const session = await auth.api.getSession({
         headers: await headers()
@@ -20,7 +32,7 @@ export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
         }
     });
     const connectedRepoIds= new Set(dbRepos.map((repo=>repo.githubId)))
-    return githubRepos.map((repo:any)=>{
+    return githubRepos.map((repo: RepositoryItem) => {
         return {
             ...repo,
             isConnected: connectedRepoIds.has(String(repo.id))
@@ -29,7 +41,7 @@ export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
 
 }
 
-export const connectRepository = async (owner: string, repo: string, githubId: number) => {
+export const connectRepository = async (owner: string, repo: string, githubId: number | bigint) => {
     const session = await auth.api.getSession({
         headers: await headers()
     })
@@ -45,7 +57,7 @@ export const connectRepository = async (owner: string, repo: string, githubId: n
     if (webhook) {
         await prisma.repository.create({
             data: {
-                githubId: BigInt(githubId).toString(),
+                githubId: String(githubId),
                 name: repo,
                 owner: owner,
                 fullName: `${owner}/${repo}`,

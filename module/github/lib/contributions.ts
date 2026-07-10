@@ -1,9 +1,34 @@
 import { Octokit } from 'octokit';
 
+interface ContributionDay {
+  contributionCount: number;
+  date: string;
+  color: string;
+}
+
+interface ContributionWeek {
+  contributionDays: ContributionDay[];
+}
+
+interface ContributionCalendar {
+  totalContributions: number;
+  weeks: ContributionWeek[];
+}
+
+interface GraphQLResponse {
+  user: {
+    contributionsCollection: {
+      contributionCalendar: ContributionCalendar;
+    };
+  };
+}
+
+export type { ContributionCalendar, ContributionWeek, ContributionDay };
+
 export async function fetchUserContribution(
     token: string,
     username: string
-) {
+): Promise<ContributionCalendar | null> {
     const octokit = new Octokit({
         auth: token
     })
@@ -26,7 +51,7 @@ query($username: String!) {
   }
 `
     try {
-        const response: any = await octokit.graphql(query, {
+        const response = await octokit.graphql<GraphQLResponse>(query, {
             username
         })
         return response.user.contributionsCollection.contributionCalendar

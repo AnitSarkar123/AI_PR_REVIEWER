@@ -1,11 +1,21 @@
 "use server"
-import { fetchUserContribution } from '@/module/github/lib/contributions';
+import { fetchUserContribution, ContributionCalendar } from '@/module/github/lib/contributions';
 import { getGithubToken } from '@/module/github/lib/token';
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { Octokit } from 'octokit';
 import prisma from '@/lib/db';
+
+interface MonthlyData {
+  [key: string]: { commits: number; prs: number; reviews: number };
+}
+
+type ContributionDay = {
+  date: string;
+  count: number;
+  level: number;
+};
 export async function getContributionStats() {
     try {
         const session = await auth.api.getSession({
@@ -20,20 +30,19 @@ export async function getContributionStats() {
         })
         const { data: user } = await octokit.rest.users.getAuthenticated()
         const username = user.login;
-        const calender = await fetchUserContribution(token, username)
-        if (!calender) {
+        const calendar = await fetchUserContribution(token, username)
+        if (!calendar) {
             return null;
         }
-        const contribution = calender.weeks.flatMap((week: any) => week.contributionDays.map((day: any) => ({
+        const contribution: ContributionDay[] = calendar.weeks.flatMap(
+          (week) => week.contributionDays.map((day: { date: string; contributionCount: number }) => ({
             date: day.date,
             count: day.contributionCount,
-            level: Math.min(4, Math.floor(day.contributionCount / 3))
-
-
-        }))
+            level: Math.min(4, Math.floor(day.contributionCount / 3)),
+          }))
         )
         return {
-            totalContributions: calender.totalContributions,
+            totalContributions: calendar.totalContributions,
             contributions: contribution
         }
     }
@@ -71,8 +80,8 @@ export async function getDashboardStatus(){
 			}),
 		]);
         //
-        const calender = await fetchUserContribution(token,user.login)
-        const TotalCommits =calender?.totalContributions || 0
+        const calendarData = await fetchUserContribution(token,user.login)
+        const totalCommits = calendarData?.totalContributions || 0
 
         //counting the the PRs from database or github
         const {data:prs} = await octokit.rest.search.issuesAndPullRequests({
@@ -85,7 +94,7 @@ export async function getDashboardStatus(){
         // const totalReviews = 44
         return{
             totalRepos,
-            TotalCommits,
+            totalCommits,
             totalPRs,
             totalReviews
 
@@ -117,13 +126,11 @@ export async function getMonthlyActivity(){
             auth: token
         })
         const {data :user} = await octokit.rest.users.getAuthenticated()
-        const calender = await fetchUserContribution(token,user.login)
-        if(!calender){
+        const calendar = await fetchUserContribution(token,user.login)
+        if(!calendar){
             return [];
         }
-        const monthlyData:{
-            [key:string]:{commits:number,prs:number,reviews:number}
-        }={}
+        const monthlyData: MonthlyData = {};
         const monthNames =[
             "Jan",
             "Feb",
@@ -148,8 +155,8 @@ export async function getMonthlyActivity(){
 				reviews: 0,
 			};
 		}
-        calender.weeks.forEach((week:any)=>{
-            week.contributionDays.forEach((day:any)=>{
+        calendar.weeks.forEach((week) => {
+            week.contributionDays.forEach((day) => {
                 const date = new Date(day.date);
                 const monthKey = monthNames[date.getMonth()];
                 if(monthlyData[monthKey]){
@@ -187,7 +194,7 @@ export async function getMonthlyActivity(){
             per_page: 100,
         });
 
-        prs.items.forEach((pr: any) => {
+        prs.items.forEach((pr: { created_at: string }) => {
             const date = new Date(pr.created_at);
             const monthKey = monthNames[date.getMonth()];
             if (monthlyData[monthKey]) {
