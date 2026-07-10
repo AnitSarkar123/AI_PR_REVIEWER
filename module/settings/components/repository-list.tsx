@@ -30,6 +30,7 @@ import {
 	disconnectRepository,
 	disconnectAllRepositories,
 } from "../actions";
+import { WebhookStatusBadge } from "@/module/repository/components/webhook-status-badge";
 
 export function RepositoryList() {
 	const queryClient = useQueryClient();
@@ -210,6 +211,10 @@ export function RepositoryList() {
 										<h3 className="font-medium truncate">
 											{repo.fullName}
 										</h3>
+										<WebhookStatusBadge
+											owner={repo.owner}
+											repo={repo.name}
+										/>
 										<a
 											href={repo.url}
 											target="_blank"

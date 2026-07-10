@@ -26,8 +26,6 @@ import {
 	Clock,
 	CheckCircle2,
 	XCircle,
-	Clipboard,
-	ClipboardCheck,
 	ChevronLeft,
 	ChevronRight,
 	GitPullRequest,
@@ -357,14 +355,7 @@ export default function ReviewsPageClient() {
 												{ addSuffix: true }
 											)}
 										</div>
-										<div className="prose prose-sm dark:prose-invert max-w-none">
-											<div className="bg-muted/50 border border-border/60 p-4 rounded-lg">
-												<pre className="whitespace-pre-wrap text-xs font-mono text-foreground/80 line-clamp-6">
-													{review.review.substring(0, 300)}
-													{review.review.length > 300 ? "..." : ""}
-												</pre>
-											</div>
-										</div>
+										<ReviewPreview content={review.review} />
 
 										<div className="flex gap-2">
 											<Dialog>
@@ -395,6 +386,18 @@ export default function ReviewsPageClient() {
 													</ScrollArea>
 
 													<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
+														<Button variant="outline" size="sm" onClick={() => {
+															const blob = new Blob([review.review], { type: "text/markdown" });
+															const url = URL.createObjectURL(blob);
+															const a = document.createElement("a");
+															a.href = url;
+															a.download = `${review.repository.fullName}-PR${review.prNumber}-review.md`;
+															a.click();
+															URL.revokeObjectURL(url);
+														}}>
+															<Download className="h-3 w-3 mr-1.5" />
+															Export
+														</Button>
 														<Button variant="outline" size="sm" asChild>
 															<a
 																href={review.prUrl}
