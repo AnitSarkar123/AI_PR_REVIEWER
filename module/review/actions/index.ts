@@ -55,3 +55,60 @@ export async function getReviewCount() {
 
 	return count;
 }
+
+export async function getPendingReviewCount() {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session) {
+		return 0;
+	}
+
+	const count = await prisma.review.count({
+		where: {
+			repository: {
+				userid: session.user.id,
+			},
+			status: "pending",
+		},
+	});
+
+	return count;
+}
+
+export async function retryFailedReview(reviewId: string) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session) {
+		throw new Error("Unauthorized");
+	}
+
+	const review = await prisma.review.findUnique({
+		where: { id: reviewId },
+		include: { repository: true },
+	});
+
+	if (!review) {
+		throw new Error("Review not found");
+	}
+
+	if (review.repository.userid !== session.user.id) {
+		throw new Error("Unauthorized");
+	}
+
+	if (review.status !== "failed") {
+		throw new Error("Only failed reviews can be retried");
+	}
+
+	const { reviewPullRequest } = await import("@/module/ai/actions");
+	const result = await reviewPullRequest(
+		review.repository.owner,
+		review.repository.name,
+		review.prNumber
+	);
+
+	return result;
+}
