@@ -72,8 +72,10 @@ const AppSidebar = () => {
 		},
 	]
     const isActive = (url: string) => {
-		return pathname === url || pathname.startsWith(url + "/dashboard");
-	};
+        if (pathname === url) return true;
+        if (url === "/dashboard") return pathname.startsWith("/dashboard/");
+        return false;
+    };
 
 	if (!mounted || !session) return null;
 

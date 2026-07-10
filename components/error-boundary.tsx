@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 interface ErrorBoundaryProps {
     children: React.ReactNode;
     fallback?: React.ReactNode;
+    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -27,11 +28,31 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
         console.error("[ErrorBoundary] Caught error:", error, errorInfo);
+        this.props.onError?.(error, errorInfo);
     }
 
     handleRetry = () => {
         this.setState({ hasError: false, error: null });
     };
+
+    componentDidMount() {
+        this.unhandledRejectionHandler = (event: PromiseRejectionEvent) => {
+            console.error("[ErrorBoundary] Unhandled promise rejection:", event.reason);
+            const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+            if (!this.state.hasError) {
+                this.setState({ hasError: true, error });
+            }
+        };
+        window.addEventListener("unhandledrejection", this.unhandledRejectionHandler);
+    }
+
+    componentWillUnmount() {
+        if (this.unhandledRejectionHandler) {
+            window.removeEventListener("unhandledrejection", this.unhandledRejectionHandler);
+        }
+    }
+
+    private unhandledRejectionHandler?: (event: PromiseRejectionEvent) => void;
 
     render() {
         if (this.state.hasError) {
