@@ -29,8 +29,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
-import ContributionGraph from '../../module/dashboard/components/contribution-graph';
+import ContributionGraph from '@/module/dashboard/components/contribution-graph';
 import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
+import { EmptyDashboardState } from '@/module/dashboard/components/onboarding-wizard';
 
 
 const Mainpage = () => {
@@ -47,6 +48,22 @@ const Mainpage = () => {
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   })
+
+  const hasNoData = !isLoading && stats && stats.totalRepos === 0 && stats.totalReviews === 0 && stats.TotalCommits === 0;
+
+  if (hasNoData) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Get started with AI-powered code reviews
+          </p>
+        </div>
+        <EmptyDashboardState />
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-6'>
