@@ -26,13 +26,14 @@ export async function POST(req: NextRequest) {
 
         const body = JSON.parse(bodyText);
 
+        if (event === "ping") {
+        return NextResponse.json({ message: "pong" }, { status: 200 })
+        } //Handle ping event first 
+
         if (!validateWebhookPayload(body)) {
             return NextResponse.json({ message: "Invalid webhook payload structure" }, { status: 400 })
         }
 
-        if (event === "ping") {
-            return NextResponse.json({ message: "pong" }, { status: 200 })
-        }
 
         if (event === "pull_request") {
             const action = body.action;
