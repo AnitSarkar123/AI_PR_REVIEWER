@@ -1,0 +1,47 @@
+name: Issue Auto-Assign and Label
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  handle-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign Creator and Add ELUSOC Label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const creator = context.payload.issue.user.login;
+            const issueNumber = context.issue.number;
+
+            console.log(`Processing issue #${issueNumber} opened by @${creator}`);
+
+            // 1. Assign issue to the creator
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                assignees: [creator]
+              });
+              console.log(`Successfully assigned issue #${issueNumber} to @${creator}`);
+            } catch (error) {
+              console.error(`Failed to assign issue: ${error.message}`);
+            }
+
+            // 2. Add 'ELUSOC' label to the issue
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                labels: ['ELUSOC']
+              });
+              console.log(`Successfully added 'ELUSOC' label to issue #${issueNumber}`);
+            } catch (error) {
+              console.error(`Failed to add label: ${error.message}`);
+            }
