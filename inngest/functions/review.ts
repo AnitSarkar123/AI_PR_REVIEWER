@@ -6,12 +6,12 @@ import { generateText } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
 export const generateReview = inngest.createFunction(
-    { id: "generate-review" },
+    { id: "generate-review", retries: 3 },
     { event: "pr.review.requested" },
     async ({ event, step }) => {
         try {
             const { owner, repo, prNumber, userId } = event.data
-            console.log("[INNGEST] Generating review for PR:", owner, repo, prNumber)
+
             const { diff, title, description, token } = await step.run("fetch-pr-data", async () => {
                 const account = await prisma.account.findFirst({
                     where: {
@@ -20,8 +20,10 @@ export const generateReview = inngest.createFunction(
                     }
                 })
                 if (!account?.accessToken) {
-                    throw new Error("No github access token found for user")
-
+                    throw new Error("No GitHub access token found for user. Please reconnect your GitHub account.")
+                }
+                if (account.accessTokenExpiresAt && new Date(account.accessTokenExpiresAt) < new Date()) {
+                    throw new Error("GitHub access token has expired. Please re-authenticate.")
                 }
                 const data = await getPullRequestDiff(account.accessToken, owner, repo, prNumber)
                 return { ...data, token: account.accessToken }

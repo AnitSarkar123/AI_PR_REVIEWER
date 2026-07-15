@@ -1,4 +1,3 @@
-"use client"
 "use client";
 
 import {
@@ -73,8 +72,10 @@ const AppSidebar = () => {
 		},
 	]
     const isActive = (url: string) => {
-		return pathname === url || pathname.startsWith(url + "/dashboard");
-	};
+        if (pathname === url) return true;
+        if (url === "/dashboard") return pathname.startsWith("/dashboard/");
+        return false;
+    };
 
 	if (!mounted || !session) return null;
 
@@ -129,6 +130,7 @@ const AppSidebar = () => {
 								<Link
 									href={item.url}
 									className="flex items-center gap-3"
+									{...(isActive(item.url) ? { "aria-current": "page" as const } : {})}
 								>
 									<item.icon className="w-5 h-5 flex shrink-0" />
 									<span className="text-sm font-medium">

@@ -27,7 +27,7 @@ interface Repository {
 	html_url: string;
 	stargazers_count: number;
 	language: string | null;
-	topics: string[];
+	topics?: string[];
 	isConnected?: boolean;
 }
 
@@ -53,7 +53,7 @@ const RepositoryPageClient = () => {
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
-			(entries: any) => {
+			(entries: IntersectionObserverEntry[]) => {
 				if (
 					entries[0].isIntersecting &&
 					hasNextPage &&
@@ -119,8 +119,10 @@ const RepositoryPageClient = () => {
 			</div>
 
 			<div className="relative">
-				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+				<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+				<label htmlFor="repo-search" className="sr-only">Search repositories</label>
 				<Input
+					id="repo-search"
 					placeholder="Search repositories..."
 					className="pl-8"
 					value={searchQuery}
