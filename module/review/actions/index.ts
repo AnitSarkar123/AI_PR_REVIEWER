@@ -2,10 +2,9 @@
 
 import prisma from "@/lib/db";
 import { auth } from "@/lib/auth";
-
 import { headers } from "next/headers";
 
-export async function getReviews() {
+export async function getReviews(cursor?: string) {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -26,8 +25,90 @@ export async function getReviews() {
 		orderBy: {
 			createdAt: "desc",
 		},
-		take: 50,
+		take: 11,
+		...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
 	});
 
-	return reviews;
+	const hasMore = reviews.length === 11;
+	const data = hasMore ? reviews.slice(0, 10) : reviews;
+	const nextCursor = hasMore ? data[data.length - 1]?.id : null;
+
+	return { data, nextCursor, hasMore };
+}
+
+export async function getReviewCount() {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session) {
+		throw new Error("Unauthorized");
+	}
+
+	const count = await prisma.review.count({
+		where: {
+			repository: {
+				userid: session.user.id,
+			},
+		},
+	});
+
+	return count;
+}
+
+export async function getPendingReviewCount() {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session) {
+		return 0;
+	}
+
+	const count = await prisma.review.count({
+		where: {
+			repository: {
+				userid: session.user.id,
+			},
+			status: "pending",
+		},
+	});
+
+	return count;
+}
+
+export async function retryFailedReview(reviewId: string) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+
+	if (!session) {
+		throw new Error("Unauthorized");
+	}
+
+	const review = await prisma.review.findUnique({
+		where: { id: reviewId },
+		include: { repository: true },
+	});
+
+	if (!review) {
+		throw new Error("Review not found");
+	}
+
+	if (review.repository.userid !== session.user.id) {
+		throw new Error("Unauthorized");
+	}
+
+	if (review.status !== "failed") {
+		throw new Error("Only failed reviews can be retried");
+	}
+
+	const { reviewPullRequest } = await import("@/module/ai/actions");
+	const result = await reviewPullRequest(
+		review.repository.owner,
+		review.repository.name,
+		review.prNumber
+	);
+
+	return result;
 }
