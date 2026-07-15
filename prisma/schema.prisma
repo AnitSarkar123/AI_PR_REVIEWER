@@ -50,6 +50,7 @@ model Repository{
   updatedAt DateTime @updatedAt
 
   @@index([userid])
+  @@index([owner, name])
   @@map("repository")
 }
 
@@ -67,6 +68,7 @@ model Review {
 	updatedAt    DateTime   @updatedAt
 
 	@@index([repositoryId])
+	@@index([status, createdAt])
 	@@map("review")
 }
 

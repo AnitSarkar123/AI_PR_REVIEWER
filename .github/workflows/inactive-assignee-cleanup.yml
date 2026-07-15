@@ -1,0 +1,168 @@
+name: Inactive Assignee Cleanup
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    # Allows manual triggering
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup Inactive Assignees
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 1. Fetch all open pull requests with their details using GraphQL
+            let pulls = [];
+            try {
+              const prQuery = `
+                query($owner: String!, $repo: String!) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequests(states: OPEN, first: 100) {
+                      nodes {
+                        number
+                        body
+                        title
+                        headRefName
+                        author {
+                          login
+                        }
+                        closingIssuesReferences(first: 10) {
+                          nodes {
+                            number
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+              const prResult = await github.graphql(prQuery, { owner, repo });
+              pulls = prResult.repository?.pullRequests?.nodes || [];
+              console.log(`Fetched ${pulls.length} open pull requests.`);
+            } catch (error) {
+              console.warn(`Error fetching open PRs via GraphQL: ${error.message}. Continuing with empty PR list.`);
+            }
+
+            // Helper function to check if a PR matches the assignee and issue
+            function hasSubmittedPR(assigneeLogin, issueNumber) {
+              for (const pr of pulls) {
+                if (pr.author && pr.author.login === assigneeLogin) {
+                  // Check official closing reference from GraphQL
+                  const closedIssues = pr.closingIssuesReferences?.nodes || [];
+                  if (closedIssues.some(node => node.number === issueNumber)) {
+                    return true;
+                  }
+                  
+                  // Check regex on body, title, branch
+                  const body = pr.body || "";
+                  const title = pr.title || "";
+                  const branch = pr.headRefName || "";
+                  
+                  const issueRegex = new RegExp(`#${issueNumber}\\b`, 'i');
+                  if (issueRegex.test(body) || issueRegex.test(title)) {
+                    return true;
+                  }
+                  
+                  const branchRegex = new RegExp(`(?:issue|bug|feature)[-_]${issueNumber}\\b`, 'i');
+                  if (branchRegex.test(branch)) {
+                    return true;
+                  }
+                  if (branch.startsWith(`${issueNumber}-`) || branch.endsWith(`-${issueNumber}`) || branch === `${issueNumber}`) {
+                    return true;
+                  }
+                }
+              }
+              return false;
+            }
+
+            // 2. Fetch all open issues in the repository
+            console.log("Listing open issues...");
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open'
+            });
+
+            const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+            const now = new Date();
+
+            for (const issue of openIssues) {
+              // Skip PRs (GitHub treats PRs as issues in listForRepo, they have a pull_request property)
+              if (issue.pull_request) {
+                continue;
+              }
+              
+              if (issue.assignees && issue.assignees.length > 0) {
+                for (const assignee of issue.assignees) {
+                  const assigneeLogin = assignee.login;
+                  
+                  // Get issue events to find when this assignee was assigned
+                  const events = await github.paginate(github.rest.issues.listEvents, {
+                    owner,
+                    repo,
+                    issue_number: issue.number
+                  });
+                  
+                  // Find the latest assignment event for this assignee
+                  const assignEvents = events.filter(e => e.event === 'assigned' && e.assignee && e.assignee.login === assigneeLogin);
+                  if (assignEvents.length > 0) {
+                    const latestAssignEvent = assignEvents[assignEvents.length - 1];
+                    const assignedAt = new Date(latestAssignEvent.created_at);
+                    const diffTime = Math.abs(now - assignedAt);
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    
+                    console.log(`Issue #${issue.number}: Assignee @${assigneeLogin} was assigned ${diffDays.toFixed(2)} days ago.`);
+                    
+                    if (diffTime >= twoDaysInMs) {
+                      // Check if they have submitted a PR for this issue
+                      if (!hasSubmittedPR(assigneeLogin, issue.number)) {
+                        console.log(`Unassigning @${assigneeLogin} from issue #${issue.number} due to inactivity (assigned ${diffDays.toFixed(2)} days ago).`);
+                        
+                        // Unassign the assignee
+                        try {
+                          await github.rest.issues.removeAssignees({
+                            owner,
+                            repo,
+                            issue_number: issue.number,
+                            assignees: [assigneeLogin]
+                          });
+                          console.log(`Successfully unassigned @${assigneeLogin} from issue #${issue.number}`);
+                        } catch (error) {
+                          console.error(`Failed to unassign @${assigneeLogin} from issue #${issue.number}: ${error.message}`);
+                          continue; // skip commenting if unassignment failed
+                        }
+                        
+                        // Post a friendly notification comment on the issue
+                        try {
+                          const commentBody = `Hi @${assigneeLogin}, you have been automatically unassigned from this issue because you did not submit a pull request within 2 days of assignment. Feel free to ask to be reassigned if you are ready to work on it!`;
+                          await github.rest.issues.createComment({
+                            owner,
+                            repo,
+                            issue_number: issue.number,
+                            body: commentBody
+                          });
+                          console.log(`Commented on issue #${issue.number} about auto-unassign.`);
+                        } catch (error) {
+                          console.error(`Failed to post comment on issue #${issue.number}: ${error.message}`);
+                        }
+                      } else {
+                        console.log(`Keep assignment: @${assigneeLogin} has submitted a PR for issue #${issue.number}.`);
+                      }
+                    }
+                  } else {
+                    console.log(`Issue #${issue.number}: No assignment event found for @${assigneeLogin}. Skipping.`);
+                  }
+                }
+              }
+            }
