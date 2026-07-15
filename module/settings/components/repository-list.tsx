@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, Trash2, AlertTriangle } from "lucide-react";
+import { ExternalLink, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -30,6 +30,7 @@ import {
 	disconnectRepository,
 	disconnectAllRepositories,
 } from "../actions";
+import { WebhookStatusBadge } from "@/module/repository/components/webhook-status-badge";
 
 export function RepositoryList() {
 	const queryClient = useQueryClient();
@@ -66,7 +67,7 @@ export function RepositoryList() {
 				toast.error(result?.error || "Failed to disconnect repository");
 			}
 		},
-		onError: (error: any) => {
+		onError: (error: Error) => {
 			console.error("Failed to disconnect repository:", error);
 			toast.error("Failed to disconnect repository");
 		},
@@ -174,9 +175,14 @@ export function RepositoryList() {
 											disconnectAllMutation.isPending
 										}
 									>
-										{disconnectAllMutation.isPending
-											? "Disconnecting..."
-											: "Disconnect All"}
+										{disconnectAllMutation.isPending ? (
+											<span className="flex items-center gap-2">
+												<Loader2 className="h-4 w-4 animate-spin" />
+												Disconnecting...
+											</span>
+										) : (
+											"Disconnect All"
+										)}
 									</AlertDialogAction>
 								</AlertDialogFooter>
 							</AlertDialogContent>
@@ -205,6 +211,10 @@ export function RepositoryList() {
 										<h3 className="font-medium truncate">
 											{repo.fullName}
 										</h3>
+										<WebhookStatusBadge
+											owner={repo.owner}
+											repo={repo.name}
+										/>
 										<a
 											href={repo.url}
 											target="_blank"
@@ -254,9 +264,14 @@ export function RepositoryList() {
 													disconnectMutation.isPending
 												}
 											>
-												{disconnectMutation.isPending
-													? "Disconnecting..."
-													: "Disconnect"}
+												{disconnectMutation.isPending ? (
+													<span className="flex items-center gap-2">
+														<Loader2 className="h-4 w-4 animate-spin" />
+														Disconnecting...
+													</span>
+												) : (
+													"Disconnect"
+												)}
 											</AlertDialogAction>
 										</AlertDialogFooter>
 									</AlertDialogContent>

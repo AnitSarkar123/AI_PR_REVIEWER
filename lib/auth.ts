@@ -4,7 +4,6 @@ import {prismaAdapter } from "better-auth/adapters/prisma";
 import { polarClient } from "@/module/payment/config/polar";
 import {polar,checkout,portal,usage ,webhooks} from "@polar-sh/better-auth"
 import { updatePolarCustomerId, updateUserTier } from "@/module/payment/lib/subscription";
-// import { Payload } from './generated/prisma/internal/prismaNamespace';
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
         provider: "postgresql", // or "mysql", "postgresql", ...etc
@@ -74,14 +73,22 @@ export const auth = betterAuth({
                     onOrderPaid:async()=>{
 
                     },
-                    onCustomerCreated:async(payload)=>{
-                        const user =await prisma.user.findUnique({
-                            where:{
-                                email:payload.data.email as string
-                            }
-                        })
-                        if(user){
-                            await updatePolarCustomerId(user.id, payload.data.id);
+                    onCustomerCreated: async (payload) => {
+                        const customerEmail = payload.data.email as string | undefined;
+                        const customerId = payload.data.id;
+
+                        let user = customerEmail
+                            ? await prisma.user.findUnique({ where: { email: customerEmail } })
+                            : null;
+
+                        if (!user && payload.data.organizationId) {
+                            user = await prisma.user.findFirst({
+                                where: { polarCustomerId: customerId },
+                            });
+                        }
+
+                        if (user) {
+                            await updatePolarCustomerId(user.id, customerId);
                         }
                     }
                 })

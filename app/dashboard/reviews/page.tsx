@@ -30,6 +30,8 @@ import {
 	SearchX,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import { toast } from "sonner";
 
 import { useReviews, type ReviewFilters } from "@/module/review/hooks/use-reviews";
 import { ReviewFilters as ReviewFiltersComponent, type StatusFilter, type SortOption } from "@/module/review/components/review-filters";
@@ -211,6 +213,9 @@ export default function ReviewsPageClient() {
 		setPage(1);
 	}, []);
 
+	const allReviews = data?.pages.flatMap((page) => page.data) || [];
+	const { pendingCount } = useReviewPolling();
+
 	if (isLoading) {
 		return (
 			<div className="space-y-4">
@@ -242,7 +247,9 @@ export default function ReviewsPageClient() {
 					Review History
 				</h1>
 				<p className="text-muted-foreground">
-					View all AI code reviews
+					{totalCount !== undefined
+						? `View all AI code reviews (${totalCount} total)`
+						: "View all AI code reviews"}
 				</p>
 			</div>
 
@@ -311,92 +318,121 @@ export default function ReviewsPageClient() {
 												</Badge>
 											)}
 										</div>
-										<CardDescription>
-											{review.repository.fullName} ⋅ PR #{review.prNumber}
-										</CardDescription>
-									</div>
 
-									<Button
-										variant="ghost"
-										size="icon"
-										asChild
-									>
-										<a
-											href={review.prUrl}
-											target="_blank"
-											rel="noopener noreferrer"
+										<Button
+											variant="ghost"
+											size="icon"
+											asChild
 										>
-											<ExternalLink className="h-4 w-4" />
-										</a>
-									</Button>
-								</div>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-4">
-									<div className="text-xs text-muted-foreground font-medium">
-										{formatDistanceToNow(
-											new Date(review.createdAt),
-											{ addSuffix: true }
-										)}
+											<a
+												href={review.prUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<ExternalLink className="h-4 w-4" />
+											</a>
+										</Button>
 									</div>
-									<div className="prose prose-sm dark:prose-invert max-w-none">
-										<div className="bg-muted/50 border border-border/60 p-4 rounded-lg">
-											<pre className="whitespace-pre-wrap text-xs font-mono text-foreground/80">
-												{review.review.substring(0, 300)}
-												{review.review.length > 300 ? "..." : ""}
-											</pre>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-4">
+										<div className="text-xs text-muted-foreground font-medium">
+											{formatDistanceToNow(
+												new Date(review.createdAt),
+												{ addSuffix: true }
+											)}
+										</div>
+										<ReviewPreview content={review.review} />
+
+										<div className="flex gap-2">
+											<Dialog>
+												<DialogTrigger asChild>
+													<Button variant="default" size="sm">
+														View Full Review
+													</Button>
+												</DialogTrigger>
+												<DialogContent className="sm:max-w-3xl max-h-[85vh] flex flex-col p-6">
+													<DialogHeader className="border-b border-border pb-4">
+														<div className="flex items-center gap-2 flex-wrap">
+															<DialogTitle className="text-xl font-bold tracking-tight">
+																{review.prTitle}
+															</DialogTitle>
+															{review.status === "completed" && (
+																<Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+																	Completed
+																</Badge>
+															)}
+														</div>
+														<DialogDescription className="text-xs">
+															{review.repository.fullName} PR #{review.prNumber} {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+														</DialogDescription>
+													</DialogHeader>
+
+													<ScrollArea className="flex-1 pr-4 py-4 overflow-y-auto">
+														<MarkdownRenderer content={review.review} />
+													</ScrollArea>
+
+													<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
+														<Button variant="outline" size="sm" onClick={() => {
+															const blob = new Blob([review.review], { type: "text/markdown" });
+															const url = URL.createObjectURL(blob);
+															const a = document.createElement("a");
+															a.href = url;
+															a.download = `${review.repository.fullName}-PR${review.prNumber}-review.md`;
+															a.click();
+															URL.revokeObjectURL(url);
+														}}>
+															<Download className="h-3 w-3 mr-1.5" />
+															Export
+														</Button>
+														<Button variant="outline" size="sm" asChild>
+															<a
+																href={review.prUrl}
+																target="_blank"
+																rel="noopener noreferrer"
+																className="gap-1.5 flex items-center"
+															>
+																View on GitHub
+																<ExternalLink className="h-3 w-3" />
+															</a>
+														</Button>
+													</div>
+												</DialogContent>
+											</Dialog>
 										</div>
 									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
 
-									<div className="flex gap-2">
-										<Dialog>
-											<DialogTrigger asChild>
-												<Button variant="default" size="sm">
-													View Full Review
-												</Button>
-											</DialogTrigger>
-											<DialogContent className="sm:max-w-3xl max-h-[85vh] flex flex-col p-6">
-												<DialogHeader className="border-b border-border pb-4">
-													<div className="flex items-center gap-2 flex-wrap">
-														<DialogTitle className="text-xl font-bold tracking-tight">
-															{review.prTitle}
-														</DialogTitle>
-														{review.status === "completed" && (
-															<Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
-																Completed
-															</Badge>
-														)}
-													</div>
-													<DialogDescription className="text-xs">
-														{review.repository.fullName} ⋅ PR #{review.prNumber} ⋅ {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
-													</DialogDescription>
-												</DialogHeader>
+					{hasNextPage && (
+						<div className="flex justify-center pt-4">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => fetchNextPage()}
+								disabled={isFetchingNextPage}
+								className="gap-2"
+							>
+								{isFetchingNextPage ? (
+									<>Loading...</>
+								) : (
+									<>
+										<ChevronRight className="h-4 w-4" />
+										Load More Reviews
+									</>
+								)}
+							</Button>
+						</div>
+					)}
 
-												<ScrollArea className="flex-1 pr-4 py-4 overflow-y-auto">
-													<MarkdownRenderer content={review.review} />
-												</ScrollArea>
-
-												<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
-													<Button variant="outline" size="sm" asChild>
-														<a
-															href={review.prUrl}
-															target="_blank"
-															rel="noopener noreferrer"
-															className="gap-1.5 flex items-center"
-														>
-															View on GitHub
-															<ExternalLink className="h-3 w-3" />
-														</a>
-													</Button>
-												</div>
-											</DialogContent>
-										</Dialog>
-									</div>
-								</div>
-							</CardContent>
-						</Card>
-					))}
-				</div>
+					{!hasNextPage && allReviews.length > 0 && (
+						<p className="text-center text-sm text-muted-foreground pt-4">
+							Showing all {totalCount ?? allReviews.length} reviews
+						</p>
+					)}
+				</>
 			)}
 
 			<ReviewPagination
