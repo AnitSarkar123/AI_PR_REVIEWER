@@ -2,10 +2,9 @@
 import { fetchUserContribution, ContributionCalendar } from '@/module/github/lib/contributions';
 import { getGithubToken } from '@/module/github/lib/token';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { Octokit } from 'octokit';
 import prisma from '@/lib/db';
+import { requireSession } from '@/lib/server-action';
 
 interface MonthlyData {
   [key: string]: { commits: number; prs: number; reviews: number };
@@ -18,12 +17,7 @@ type ContributionDay = {
 };
 export async function getContributionStats() {
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-        if (!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        await requireSession()
         const token = await getGithubToken()
         const octokit = new Octokit({
             auth: token
@@ -53,12 +47,7 @@ export async function getContributionStats() {
 }
 export async function getDashboardStatus(){
     try{
-        const session =await auth.api.getSession({
-            headers: await headers()
-        })
-        if(!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const token = await getGithubToken()
         const octokit = new Octokit({
             auth: token
@@ -68,13 +57,13 @@ export async function getDashboardStatus(){
         const [totalRepos, totalReviews] = await Promise.all([
 			prisma.repository.count({
 				where: {
-					userid: session.user.id,
+					userid: session.id,
 				},
 			}),
 			prisma.review.count({
 				where: {
 					repository: {
-						userid: session.user.id,
+						userid: session.id,
 					},
 				},
 			}),
@@ -115,12 +104,7 @@ export async function getDashboardStatus(){
 
 export async function getMonthlyActivity(){
     try{
-        const session =await auth.api.getSession({
-            headers: await headers()
-        })
-        if(!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const token = await getGithubToken()
         const octokit = new Octokit({
             auth: token
@@ -171,7 +155,7 @@ export async function getMonthlyActivity(){
         const reviews = await prisma.review.findMany({
             where: {
                 repository: {
-                    userid: session.user.id,
+                    userid: session.id,
                 },
                 createdAt: {
                     gte: sixMonthsAgo,

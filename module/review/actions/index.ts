@@ -1,22 +1,15 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireSession } from "@/lib/server-action";
 
 export async function getReviews(cursor?: string) {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
-		throw new Error("Unauthorized");
-	}
+	const session = await requireSession();
 
 	const reviews = await prisma.review.findMany({
 		where: {
 			repository: {
-				userid: session.user.id,
+				userid: session.id,
 			},
 		},
 		include: {
@@ -37,18 +30,12 @@ export async function getReviews(cursor?: string) {
 }
 
 export async function getReviewCount() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
-		throw new Error("Unauthorized");
-	}
+	const session = await requireSession();
 
 	const count = await prisma.review.count({
 		where: {
 			repository: {
-				userid: session.user.id,
+				userid: session.id,
 			},
 		},
 	});
@@ -57,18 +44,17 @@ export async function getReviewCount() {
 }
 
 export async function getPendingReviewCount() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
+	let session;
+	try {
+		session = await requireSession();
+	} catch {
 		return 0;
 	}
 
 	const count = await prisma.review.count({
 		where: {
 			repository: {
-				userid: session.user.id,
+				userid: session.id,
 			},
 			status: "pending",
 		},
@@ -78,13 +64,7 @@ export async function getPendingReviewCount() {
 }
 
 export async function retryFailedReview(reviewId: string) {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
-		throw new Error("Unauthorized");
-	}
+	const session = await requireSession();
 
 	const review = await prisma.review.findUnique({
 		where: { id: reviewId },
@@ -95,7 +75,7 @@ export async function retryFailedReview(reviewId: string) {
 		throw new Error("Review not found");
 	}
 
-	if (review.repository.userid !== session.user.id) {
+	if (review.repository.userid !== session.id) {
 		throw new Error("Unauthorized");
 	}
 
