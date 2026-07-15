@@ -29,21 +29,41 @@ import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
-import ContributionGraph from '../../module/dashboard/components/contribution-graph';
+import ContributionGraph from '@/module/dashboard/components/contribution-graph';
+import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
+import { EmptyDashboardState } from '@/module/dashboard/components/onboarding-wizard';
 
 
 const Mainpage = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: async () => getDashboardStatus(),
+    staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false
 
   })
   const { data: monthlyActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["monthly-activity"],
     queryFn: async () => getMonthlyActivity(),
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
   })
+
+  const hasNoData = !isLoading && stats && stats.totalRepos === 0 && stats.totalReviews === 0 && stats.TotalCommits === 0;
+
+  if (hasNoData) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Get started with AI-powered code reviews
+          </p>
+        </div>
+        <EmptyDashboardState />
+      </div>
+    );
+  }
 
   return (
     <div className='space-y-6'>
@@ -83,7 +103,7 @@ const Mainpage = () => {
                 {isLoading ? (
                   <Skeleton className="h-8 w-20 bg-muted/65" />
                 ) : (
-                  (stats?.TotalCommits || 0).toLocaleString()
+                  (stats?.totalCommits || 0).toLocaleString()
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -145,7 +165,7 @@ const Mainpage = () => {
         </CardContent>
       </Card>
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-2">
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Activity Overview</CardTitle>
             <CardDescription>
@@ -156,7 +176,16 @@ const Mainpage = () => {
           <CardContent>
             {isLoadingActivity ? (
               <div className="h-80 w-full flex items-center justify-center">
-                <Spinner />
+                <div className="space-y-3 w-full px-8">
+                  <div className="flex justify-between">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className="flex flex-col items-center gap-2">
+                        <div className="h-24 w-10 bg-muted rounded animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                        <div className="h-3 w-8 bg-muted rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="h-80 w-full">
@@ -204,6 +233,7 @@ const Mainpage = () => {
           </CardContent>
         </Card>
 
+        <RecentActivityCard />
 
       </div>
     </div>

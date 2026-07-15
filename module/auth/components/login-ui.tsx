@@ -58,9 +58,11 @@ const LoginUI = () => {
 					<button
 						onClick={handleGithubLogin}
 						disabled={isLoading}
+						aria-label={isLoading ? "Signing in with GitHub" : "Sign in with GitHub"}
+						aria-live="polite"
 						className="w-full py-3 px-4 bg-primary text-black rounded-lg font-semibold hover:bg-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-3 mb-8"
 					>
-						<GithubIcon size={20} />
+						<GithubIcon size={20} aria-hidden="true" />
 						{isLoading ? "Signing in..." : "GitHub"}
 					</button>
 
@@ -69,11 +71,11 @@ const LoginUI = () => {
 
 					{/* Bottom Links */}
 					<div className="mt-12 pt-8 border-t border-gray-700 flex justify-center gap-4 text-xs text-gray-500">
-						<a href="#" className="hover:text-gray-400">
+						<a href="/terms" className="hover:text-gray-400">
 							Terms of Use
 						</a>
 						<span>and</span>
-						<a href="#" className="hover:text-gray-400">
+						<a href="/privacy" className="hover:text-gray-400">
 							Privacy Policy
 						</a>
 					</div>
