@@ -1,12 +1,7 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-// import {
-// 	getRemainingLimits,
-// 	updateUserTier,
-// } from "@/modules/payment/lib/subscription";
 import { getRemainingLimits, updateUserTier } from "@/module/payment/lib/subscription";
-// import { polarClient } from "@/modules/payment/config/polar";
 import { polarClient } from "@/module/payment/config/polar";
 import prisma from "@/lib/db";
 
@@ -111,7 +106,7 @@ export async function syncSubscriptionStatus() {
 
 		// Find the most relevant subscription (active or most recent)
 		const activeSub = subscriptions.find(
-			(sub: any) => sub.status === "active"
+			(sub: { status: string; id: string }) => sub.status === "active"
 		);
 		const latestSub = subscriptions[0]; // Assuming API returns sorted or we should sort
 
