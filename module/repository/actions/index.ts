@@ -1,7 +1,6 @@
 "use server"
 import prisma from "@/lib/db"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
+import { requireSession } from "@/lib/server-action"
 import { createWebhook } from "@/module/github/lib/webhook"
 import { getRepositories } from "@/module/github/lib/github"
 import { inngest } from "@/inngest/client"
@@ -19,16 +18,11 @@ interface RepositoryItem {
   isConnected?: boolean;
 }
 export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
-    if(!session){
-        throw new Error("Unauthorized")
-    }
+    const session = await requireSession()
     const githubRepos= await getRepositories(page, PerPage)
     const dbRepos = await prisma.repository.findMany({
         where:{
-            userid:session.user.id
+            userid:session.id
         }
     });
     const connectedRepoIds= new Set(dbRepos.map((repo=>repo.githubId)))
@@ -42,14 +36,9 @@ export const fetchRepositories =async(page:number=1,PerPage:number=10)=>{
 }
 
 export const connectRepository = async (owner: string, repo: string, githubId: number | bigint) => {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
-    if (!session) {
-        throw new Error("Unauthorized")
-    }
+    const session = await requireSession()
     //check user can connect more repositories
-    const canConnect = await canConnectRepository(session.user.id)
+    const canConnect = await canConnectRepository(session.id)
     if (!canConnect) {
         throw new Error("Repository connection limit reached for this plan please upgrade your subscription plan")
     }
@@ -62,12 +51,12 @@ export const connectRepository = async (owner: string, repo: string, githubId: n
                 owner: owner,
                 fullName: `${owner}/${repo}`,
                 url: `https://github.com/${owner}/${repo}`,
-                userid: session.user.id,
+                userid: session.id,
             }
         })
 
     //increase the connected repository count for the user
-        await incrementRepositoryCount(session.user.id)
+        await incrementRepositoryCount(session.id)
 
 
 
@@ -78,7 +67,7 @@ export const connectRepository = async (owner: string, repo: string, githubId: n
             data: {
                 owner,
                 repo,
-                userId: session.user.id,
+                userId: session.id,
             }
         })
 

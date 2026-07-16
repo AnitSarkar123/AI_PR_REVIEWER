@@ -1,17 +1,11 @@
-import { auth } from '@/lib/auth';
 import prisma from '@/lib/db';
-import { headers } from 'next/headers';
+import { requireSession } from '@/lib/server-action';
 
 export const getGithubToken = async () => {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    })
-    if (!session) {
-        throw new Error("Unauthorized")
-    }
+    const session = await requireSession()
     const account = await prisma.account.findFirst({
         where: {
-            userId: session.user.id,
+            userId: session.id,
             providerId: "github"
         }
     })
