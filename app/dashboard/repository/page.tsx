@@ -11,11 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ExternalLink, Star, Search } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 import { useRepositories } from "@/module/repository/hooks/use-repositories";
 import { RepositoryListSkeleton } from "@/module/repository/components/repository-skeleton";
 import { useConnectRepository } from "@/module/repository/hooks/use-connect-repository";
+import { RepositoryEmptyState } from "@/module/repository/components/repository-empty-state";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface Repository {
 	id: number;
@@ -37,6 +39,7 @@ const RepositoryPageClient = () => {
 		fetchNextPage,
 		hasNextPage,
 		isFetchingNextPage,
+		refetch,
 	} = useRepositories();
 
 	const { mutate: connectRepo } = useConnectRepository();
@@ -45,15 +48,8 @@ const RepositoryPageClient = () => {
 		null
 	);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+	const debouncedSearch = useDebounce(searchQuery, 300);
 	const observerTarget = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearchQuery(searchQuery);
-		}, 300);
-		return () => clearTimeout(timer);
-	}, [searchQuery]);
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
@@ -85,12 +81,15 @@ const RepositoryPageClient = () => {
 
 	const allRepositories = data?.pages.flatMap((page) => page) || [];
 
-	const trimmedQuery = debouncedSearchQuery.trim().toLowerCase();
-	const filteredRepositories = allRepositories.filter(
-		(repo: Repository) =>
-			repo.name.toLowerCase().includes(trimmedQuery) ||
-			repo.full_name.toLowerCase().includes(trimmedQuery)
-	);
+	const filteredRepositories = useMemo(() => {
+		const trimmed = debouncedSearch.trim().toLowerCase();
+		if (!trimmed) return allRepositories;
+		return allRepositories.filter(
+			(repo: Repository) =>
+				repo.name.toLowerCase().includes(trimmed) ||
+				repo.full_name.toLowerCase().includes(trimmed)
+		);
+	}, [allRepositories, debouncedSearch]);
 
 	const handleConnect = (repo: Repository) => {
 		setLocalConnectingId(repo.id);
@@ -106,39 +105,7 @@ const RepositoryPageClient = () => {
 		);
 	};
 
-	if (isLoading) {
-		return (
-			<div className="space-y-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tighter">
-						Repositories
-					</h1>
-					<p className="text-muted-foreground">
-						Manage and view all your GitHub repositories
-					</p>
-				</div>
-				<RepositoryListSkeleton />
-			</div>
-		);
-	}
-
-	if (isError) {
-		return (
-			<div className="space-y-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tighter">
-						Repositories
-					</h1>
-					<p className="text-muted-foreground">
-						Manage and view all your GitHub repositories
-					</p>
-				</div>
-				<p className="text-destructive text-center" role="alert">
-					Failed to load repositories. Please check your connection and try again.
-				</p>
-			</div>
-		);
-	}
+	const showLoading = isLoading && allRepositories.length === 0;
 
 	return (
 		<div className="space-y-4">
@@ -163,110 +130,109 @@ const RepositoryPageClient = () => {
 				/>
 			</div>
 
-			<div className="grid gap-4">
-				{filteredRepositories.map((repo: Repository) => (
-					<Card
-						key={repo.id}
-						className="hover:shadow-md transition-shadow"
-					>
-						<CardHeader>
-							<div className="flex items-center justify-between">
-								<div className="space-y-2 flex-1">
-									<div className="flex items-center gap-2">
-										<CardTitle className="text-lg">
-											{repo.name}
-										</CardTitle>
-										<Badge variant={"outline"}>
-											{repo.language || "Unknown"}
-										</Badge>
-										{repo.isConnected && (
-											<Badge variant={"secondary"}>
-												Connected
-											</Badge>
-										)}
+			{showLoading ? (
+				<RepositoryListSkeleton />
+			) : isError ? (
+				<RepositoryEmptyState
+					type="loading-error"
+					onRetry={() => refetch()}
+				/>
+			) : allRepositories.length === 0 && !debouncedSearch ? (
+				<RepositoryEmptyState type="no-repositories" />
+			) : filteredRepositories.length === 0 ? (
+				<RepositoryEmptyState
+					type="no-results"
+					searchQuery={debouncedSearch}
+				/>
+			) : (
+				<>
+					<div className="grid gap-4">
+						{filteredRepositories.map((repo: any) => (
+							<Card
+								key={repo.id}
+								className="hover:shadow-md transition-shadow"
+							>
+								<CardHeader>
+									<div className="flex items-center justify-between">
+										<div className="space-y-2 flex-1">
+											<div className="flex items-center gap-2">
+												<CardTitle className="text-lg">
+													{repo.name}
+												</CardTitle>
+												<Badge variant={"outline"}>
+													{repo.language || "Unknown"}
+												</Badge>
+												{repo.isConnected && (
+													<Badge variant={"secondary"}>
+														Connected
+													</Badge>
+												)}
+											</div>
+											<CardDescription>
+												{repo.description}
+											</CardDescription>
+										</div>
+										<div className="flex gap-2">
+											<Button variant="ghost" size="icon" asChild>
+												<a
+													href={repo.html_url}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<ExternalLink className="h-4 w-4" />
+												</a>
+											</Button>
+											<Button
+												onClick={() => handleConnect(repo)}
+												disabled={
+													localConnectingId === repo.id ||
+													repo.isConnected
+												}
+												variant={
+													repo.isConnected
+														? "ghost"
+														: "default"
+												}
+											>
+												{localConnectingId === repo.id
+													? "Connecting..."
+													: repo.isConnected
+													? "Connected"
+													: "Connect"}
+											</Button>
+										</div>
 									</div>
-									<CardDescription>
-										{repo.description}
-									</CardDescription>
-								</div>
-								<div className="flex gap-2">
-									<Button variant="ghost" size="icon" asChild>
-										<a
-											href={repo.html_url}
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											<ExternalLink className="h-4 w-4" />
-										</a>
-									</Button>
-									<Button
-										onClick={() => handleConnect(repo)}
-										disabled={
-											localConnectingId === repo.id ||
-											repo.isConnected
-										}
-										variant={
-											repo.isConnected
-												? "ghost"
-												: "default"
-										}
-									>
-										{localConnectingId === repo.id
-											? "Connecting..."
-											: repo.isConnected
-											? "Connected"
-											: "Connect"}
-									</Button>
-								</div>
-							</div>
-						</CardHeader>
-						<CardContent>
-							<div className="flex items-center gap-2">
-								<div className="flex items-center gap-1">
-									<Star
-										className="h-4 w-4 text-primary"
-										fill="#ffe0c2"
-									/>
-									<p>{repo.stargazers_count}</p>
-								</div>
-								{repo.topics?.map((topic: string) => (
-									<Badge key={topic} variant="outline">
-										{topic}
-									</Badge>
-								))}
-							</div>
-						</CardContent>
-					</Card>
-				))}
-			</div>
+								</CardHeader>
+								<CardContent>
+									<div className="flex items-center gap-2">
+										<div className="flex items-center gap-1">
+											<Star
+												className="h-4 w-4 text-primary"
+												fill="#ffe0c2"
+											/>
+											<p>{repo.stargazers_count}</p>
+										</div>
+										{repo.topics.map((topic: string) => (
+											<Badge key={topic} variant="outline">
+												{topic}
+											</Badge>
+										))}
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
 
-			{filteredRepositories.length === 0 && !isLoading && (
-				<Card>
-					<CardContent className="pt-6">
-						<div className="text-center py-8 space-y-2">
-							<p className="text-muted-foreground">
-								{trimmedQuery
-									? `No repositories match "${trimmedQuery}"`
-									: "No repositories found"}
+					<div ref={observerTarget} className="py-4">
+						{isFetchingNextPage && <RepositoryListSkeleton />}
+						{!hasNextPage && allRepositories.length > 0 && (
+							<p className="text-center text-muted-foreground">
+								No more repositories
 							</p>
-							{trimmedQuery && (
-								<Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
-									Clear Search
-								</Button>
-							)}
-						</div>
-					</CardContent>
-				</Card>
+						)}
+					</div>
+				</>
 			)}
-
-			<div ref={observerTarget} className="py-4">
-				{isFetchingNextPage && <RepositoryListSkeleton />}
-				{!hasNextPage && allRepositories.length > 0 && filteredRepositories.length > 0 && (
-					<p className="text-center text-muted-foreground">
-						No more repositories
-					</p>
-				)}
-			</div>
 		</div>
 	);
 };

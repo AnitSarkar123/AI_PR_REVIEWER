@@ -372,34 +372,22 @@ export default function ReviewsPageClient() {
 														<MarkdownRenderer content={review.review} />
 													</ScrollArea>
 
-													<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
-														<Button variant="outline" size="sm" onClick={() => {
-															const blob = new Blob([review.review], { type: "text/markdown" });
-															const url = URL.createObjectURL(blob);
-															const a = document.createElement("a");
-															a.href = url;
-															a.download = `${review.repository.fullName}-PR${review.prNumber}-review.md`;
-															a.click();
-															URL.revokeObjectURL(url);
-														}}>
-															<Download className="h-3 w-3 mr-1.5" />
-															Export
-														</Button>
-														<Button variant="outline" size="sm" asChild>
-															<a
-																href={review.prUrl}
-																target="_blank"
-																rel="noopener noreferrer"
-																className="gap-1.5 flex items-center"
-															>
-																View on GitHub
-																<ExternalLink className="h-3 w-3" />
-															</a>
-														</Button>
-													</div>
-												</DialogContent>
-											</Dialog>
-										</div>
+												<div className="flex justify-end gap-2 border-t border-border pt-4 mt-2">
+													<ReviewExportButton reviewId={review.id} />
+													<Button variant="outline" size="sm" asChild>
+														<a
+															href={review.prUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															className="gap-1.5 flex items-center"
+														>
+															View on GitHub
+															<ExternalLink className="h-3 w-3" />
+														</a>
+													</Button>
+												</div>
+											</DialogContent>
+										</Dialog>
 									</div>
 								</CardContent>
 							</Card>

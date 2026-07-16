@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import { customer, checkout } from "@/lib/auth-client";
 import { getSubscriptionData ,syncSubscriptionStatus} from "@/module/payment/actions";
 import { Spinner } from "@/components/ui/spinner";
+import { UsageProgressCard } from "@/module/payment/components/usage-progress-card";
+import { TierComparisonTable } from "@/module/payment/components/tier-comparison-table";
 
 const PLAN_FEATURE = {
 	free: [
@@ -233,67 +235,34 @@ export default function SubscriptionPageClient() {
 							Your current plan limits and usage
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="grid gap-4 md:grid-cols-2">
-							<div className="space-y-2">
-								<div className="flex items-center justify-between">
-									<span className="text-sm font-medium">
-										Repositories
-									</span>
-									<Badge
-										variant={
-											data.limits.repositories.canAdd
-												? "default"
-												: "destructive"
-										}
-									>
-										{data.limits.repositories.current} /{" "}
-										{data.limits.repositories.limit ?? "∞"}
-									</Badge>
-								</div>
-								<div className="h-2 bg-muted rounded-full overflow-hidden">
-									<div
-										className={`h-full ${
-											data.limits.repositories.canAdd
-												? "bg-primary"
-												: "bg-destructive"
-										}`}
-										style={{
-											width: data.limits.repositories
-												.limit
-												? `${Math.min(
-														(data.limits
-															.repositories
-															.current /
-															data.limits
-																.repositories
-																.limit) *
-															100,
-														100
-												  )}%`
-												: `0%`,
-										}}
-									/>
-								</div>
-							</div>
-							<div className="space-y-2">
-								<div className="flex items-center justify-between">
-									<span className="text-sm font-medium">
-										Reviews per Repository
-									</span>
-									<Badge variant={"outline"}>
-										{isPro
-											? "Unlimited"
-											: "5 per repository"}
-									</Badge>
-								</div>
-								<p className="text-xs text-muted-foreground">
-									{isPro
-										? "No limit on reviews"
-										: "Free tier allows 5 reviews per repository"}
-								</p>
-							</div>
-						</div>
+					<CardContent className="space-y-3">
+						<UsageProgressCard
+							title="Connected Repositories"
+							description={
+								isPro
+									? "Unlimited repositories"
+									: "Free tier allows up to 5 repositories"
+							}
+							value={data.limits.repositories.current}
+							limit={data.limits.repositories.limit}
+						/>
+						<UsageProgressCard
+							title="Reviews per Repository"
+							description={
+								isPro
+									? "No limit on reviews"
+									: "Free tier allows 5 reviews per repository"
+							}
+							value={
+								Object.values(data.limits.reviews).reduce(
+									(acc: number, r: any) => acc + (r.current ?? 0),
+									0
+								) || 0
+							}
+							limit={
+								isPro ? null : 5 * Object.keys(data.limits.reviews).length
+							}
+						/>
 					</CardContent>
 				</Card>
 			)}
@@ -434,6 +403,19 @@ export default function SubscriptionPageClient() {
 					</CardContent>
 				</Card>
 			</div>
+
+			{/* Feature Comparison */}
+			<Card>
+				<CardHeader>
+					<CardTitle>Feature Comparison</CardTitle>
+					<CardDescription>
+						Detailed breakdown of what each plan includes
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<TierComparisonTable />
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
