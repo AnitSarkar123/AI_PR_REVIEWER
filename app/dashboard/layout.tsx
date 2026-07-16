@@ -30,7 +30,6 @@ const Dashboardlayout = async(
             </main>
         
         </SidebarInset>
-        
       
     </SidebarProvider>
   )
