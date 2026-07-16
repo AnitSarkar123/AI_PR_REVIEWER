@@ -1,8 +1,7 @@
 "use server"
 
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
 import prisma from "@/lib/db"
+import { requireSession } from "@/lib/server-action"
 import { revalidatePath } from "next/cache"
 
 import { deleteWebhook } from "@/module/github/lib/github"
@@ -10,15 +9,10 @@ import { decrementRepositoryCount, resetRepositoryCount } from "@/module/payment
 
 export async function getUserProfile(){
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-        if (!session) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const user = await prisma.user.findUnique({
             where: {
-                id: session.user.id
+                id: session.id
             },
             select:{
                 id: true,
@@ -39,14 +33,9 @@ export async function updateUserProfile(data: {
     email?: string;
 }) {
     try {
-        const Session = await auth.api.getSession({
-            headers: await headers()
-        });
-        if (!Session) {
-            throw new Error("Unauthorized");
-        }
+        const session = await requireSession();
         const updatedUser = await prisma.user.update({
-            where: { id: Session.user.id },
+            where: { id: session.id },
             data: {
                 name: data.name || undefined,
                 email: data.email || undefined
@@ -70,15 +59,10 @@ export async function updateUserProfile(data: {
 
 export async function getConnectedRepositories(){
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-        if (!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const repositories = await prisma.repository.findMany({
             where: {
-                userid: session.user.id
+                userid: session.id
             },
             select: {
                 id: true,
@@ -103,16 +87,11 @@ export async function getConnectedRepositories(){
 }
 export async function disconnectRepository(repositoryId: string){
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-        if (!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const repository= await prisma.repository.findFirst({
             where:{
                 id: repositoryId,
-                userid: session.user.id
+                userid: session.id
             }
         })
         if (!repository) {
@@ -124,7 +103,7 @@ export async function disconnectRepository(repositoryId: string){
                 id: repositoryId,
             }
         })
-        await decrementRepositoryCount(session.user.id)
+        await decrementRepositoryCount(session.id)
         revalidatePath("/dashboard/settings","page")
         revalidatePath("/dashboard/repository","page")
 
@@ -145,16 +124,11 @@ export async function disconnectRepository(repositoryId: string){
 
 export async function disconnectAllRepositories(){
     try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-        if (!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        const session = await requireSession()
         const repository= await prisma.repository.findMany({
             where:{
                 
-                userid: session.user.id
+                userid: session.id
             }
         })
         await Promise.all(repository.map(async(repo)=>{
@@ -163,10 +137,10 @@ export async function disconnectAllRepositories(){
         }))
         const result =await prisma.repository.deleteMany({
             where:{
-                userid:session.user.id,
+                userid:session.id,
             }
         })
-        await resetRepositoryCount(session.user.id)
+        await resetRepositoryCount(session.id)
         revalidatePath("/dashboard/settings","page")
         revalidatePath("/dashboard/repository","page")
         return {

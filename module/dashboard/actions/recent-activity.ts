@@ -1,8 +1,7 @@
 "use server";
 
 import prisma from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireSession } from "@/lib/server-action";
 
 export type RecentActivityItem = {
     id: string;
@@ -14,11 +13,10 @@ export type RecentActivityItem = {
 };
 
 export async function getRecentActivity(): Promise<RecentActivityItem[]> {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session?.user) {
+    let session;
+    try {
+        session = await requireSession();
+    } catch {
         return [];
     }
 
@@ -26,7 +24,7 @@ export async function getRecentActivity(): Promise<RecentActivityItem[]> {
         prisma.review.findMany({
             where: {
                 repository: {
-                    userid: session.user.id,
+                    userid: session.id,
                 },
             },
             include: {
@@ -39,7 +37,7 @@ export async function getRecentActivity(): Promise<RecentActivityItem[]> {
         }),
         prisma.repository.findMany({
             where: {
-                userid: session.user.id,
+                userid: session.id,
             },
             orderBy: {
                 createdAt: "desc",
