@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useCallback } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useMemo, useCallback } from "react";
 import {
 	Card,
 	CardContent,
@@ -26,20 +25,17 @@ import {
 	Clock,
 	CheckCircle2,
 	XCircle,
-	ChevronLeft,
-	ChevronRight,
-	GitPullRequest,
-	Download,
-	RefreshCw,
-	Loader2,
+	Clipboard,
+	ClipboardCheck,
+	SearchX,
 } from "lucide-react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { getReviews } from "@/module/review/actions";
-import { ReviewExportButton } from "@/module/review/components/review-export-button";
+import { useReviews, type ReviewFilters } from "@/module/review/hooks/use-reviews";
+import { ReviewFilters as ReviewFiltersComponent, type StatusFilter, type SortOption } from "@/module/review/components/review-filters";
+import { ReviewPagination } from "@/module/review/components/review-pagination";
 
 function parseInline(text: string) {
 	const regex = /(\*\*.*?\*\*|`.*?`)/g;
@@ -187,27 +183,35 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
 }
 
 export default function ReviewsPageClient() {
-	const {
-		data,
-		isLoading,
-		fetchNextPage,
-		hasNextPage,
-		isFetchingNextPage,
-	} = useInfiniteQuery({
-		queryKey: ["reviews"],
-		queryFn: async ({ pageParam }) => {
-			const result = await getReviews(pageParam as string | undefined);
-			return result;
-		},
-		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-		initialPageParam: undefined as string | undefined,
-	});
+	const [page, setPage] = useState(1);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+	const [sortBy, setSortBy] = useState<SortOption>("newest");
 
-	const { data: totalCount } = useQuery({
-		queryKey: ["review-count"],
-		queryFn: async () => getReviewCount(),
-		staleTime: 60_000,
-	});
+	const filters: ReviewFilters = useMemo(() => ({
+		page,
+		perPage: 10,
+		searchQuery,
+		status: statusFilter,
+		sortBy,
+	}), [page, searchQuery, statusFilter, sortBy]);
+
+	const { data: result, isLoading } = useReviews(filters);
+
+	const handleSearchChange = useCallback((value: string) => {
+		setSearchQuery(value);
+		setPage(1);
+	}, []);
+
+	const handleStatusFilterChange = useCallback((value: StatusFilter) => {
+		setStatusFilter(value);
+		setPage(1);
+	}, []);
+
+	const handleSortChange = useCallback((value: SortOption) => {
+		setSortBy(value);
+		setPage(1);
+	}, []);
 
 	const allReviews = data?.pages.flatMap((page) => page.data) || [];
 	const { pendingCount } = useReviewPolling();
@@ -224,12 +228,17 @@ export default function ReviewsPageClient() {
 					</p>
 				</div>
 				<div className="animate-pulse space-y-4">
+					<div className="h-10 bg-muted rounded-lg" />
 					<div className="h-28 bg-muted rounded-xl" />
 					<div className="h-28 bg-muted rounded-xl" />
 				</div>
 			</div>
 		);
 	}
+
+	const reviews = result?.data || [];
+	const totalCount = result?.total || 0;
+	const totalPages = result?.totalPages || 0;
 
 	return (
 		<div className="space-y-4">
@@ -244,92 +253,70 @@ export default function ReviewsPageClient() {
 				</p>
 			</div>
 
-			{allReviews.length === 0 ? (
+			<ReviewFiltersComponent
+				searchQuery={searchQuery}
+				onSearchChange={handleSearchChange}
+				statusFilter={statusFilter}
+				onStatusFilterChange={handleStatusFilterChange}
+				sortBy={sortBy}
+				onSortChange={handleSortChange}
+				totalCount={totalCount}
+			/>
+
+			{reviews.length === 0 ? (
 				<Card>
 					<CardContent className="pt-6">
-						<div className="text-center py-12 space-y-4">
-							<div className="flex justify-center">
-								<GitPullRequest className="h-12 w-12 text-muted-foreground/40" />
-							</div>
-							<div>
-								<p className="text-muted-foreground text-lg font-medium">
-									No reviews yet
-								</p>
-								<p className="text-sm text-muted-foreground/70 mt-1">
-									Connect a repository and open a pull request to get started.
-								</p>
-							</div>
-							<Button asChild variant="default" size="sm">
-								<Link href="/dashboard/repository">
-									Connect a Repository
-								</Link>
-							</Button>
+						<div className="text-center py-12 space-y-2">
+							<SearchX className="h-8 w-8 mx-auto text-muted-foreground" />
+							<p className="text-muted-foreground">
+								{searchQuery || statusFilter !== "all"
+									? "No reviews match your filters. Try adjusting your search."
+									: "No reviews yet. Connect a repository and open a PR to get started."}
+							</p>
 						</div>
 					</CardContent>
 				</Card>
 			) : (
-				<>
-					<div className="grid gap-4">
-						{allReviews.map((review: { id: string; prTitle: string; status: string; repository: { fullName: string }; prNumber: number; prUrl: string; createdAt: Date; review: string }) => (
-							<Card
-								key={review.id}
-								className="hover:shadow-md transition-shadow duration-200 border-border/80"
-							>
-								<CardHeader>
-									<div className="flex items-center justify-between">
-										<div className="space-y-2 flex-1">
-											<div className="flex items-center gap-2 flex-wrap">
-												<CardTitle className="text-lg">
-													{review.prTitle}
-												</CardTitle>
-												{review.status === "completed" && (
-													<Badge
-														variant="default"
-														className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20"
-													>
-														<CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-														Completed
-													</Badge>
-												)}
-												{review.status === "failed" && (
-													<>
-														<Badge
-															variant="destructive"
-															className="gap-1 bg-destructive/10 text-destructive border-destructive/20"
-														>
-															<XCircle className="h-3 w-3" aria-hidden="true" />
-															Failed
-														</Badge>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-5 w-5 text-muted-foreground hover:text-foreground"
-															onClick={async () => {
-																try {
-																	await retryFailedReview(review.id);
-																	toast.success("Review retry initiated");
-																} catch (e) {
-																	toast.error("Failed to retry review");
-																}
-															}}
-														>
-															<RefreshCw className="h-3 w-3" />
-														</Button>
-													</>
-												)}
-												{review.status === "pending" && (
-													<Badge
-														variant="secondary"
-														className="gap-1"
-													>
-														<Clock className="h-3 w-3" aria-hidden="true" />
-														Pending
-													</Badge>
-												)}
-											</div>
-											<CardDescription>
-												{review.repository.fullName} PR #{review.prNumber}
-											</CardDescription>
+				<div className="grid gap-4">
+					{reviews.map((review: any) => (
+						<Card
+							key={review.id}
+							className="hover:shadow-md transition-shadow duration-200 border-border/80"
+						>
+							<CardHeader>
+								<div className="flex items-center justify-between">
+									<div className="space-y-2 flex-1">
+										<div className="flex items-center gap-2 flex-wrap">
+											<CardTitle className="text-lg">
+												{review.prTitle}
+											</CardTitle>
+											{review.status === "completed" && (
+												<Badge
+													variant="default"
+													className="gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20"
+												>
+													<CheckCircle2 className="h-3 w-3" />
+													Completed
+												</Badge>
+											)}
+											{review.status === "failed" && (
+												<Badge
+													variant="destructive"
+													className="gap-1 bg-destructive/10 text-destructive border-destructive/20"
+												>
+													<XCircle className="h-3 w-3" />
+													Failed
+												</Badge>
+											)}
+											{review.status === "pending" && (
+												<Badge
+													variant="secondary"
+													className="gap-1"
+												>
+													<Clock className="h-3 w-3" />
+													Pending
+												</Badge>
+											)}
 										</div>
 
 										<Button
@@ -435,6 +422,12 @@ export default function ReviewsPageClient() {
 					)}
 				</>
 			)}
+
+			<ReviewPagination
+				currentPage={page}
+				totalPages={totalPages}
+				onPageChange={setPage}
+			/>
 		</div>
 	);
 }

@@ -3,92 +3,77 @@
 import prisma from "@/lib/db";
 import { requireSession } from "@/lib/server-action";
 
-export async function getReviews(cursor?: string) {
-	const session = await requireSession();
-
-	const reviews = await prisma.review.findMany({
-		where: {
-			repository: {
-				userid: session.id,
-			},
-		},
-		include: {
-			repository: true,
-		},
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 11,
-		...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-	});
-
-	const hasMore = reviews.length === 11;
-	const data = hasMore ? reviews.slice(0, 10) : reviews;
-	const nextCursor = hasMore ? data[data.length - 1]?.id : null;
-
-	return { data, nextCursor, hasMore };
+export interface ReviewFilters {
+	status?: "pending" | "completed" | "failed" | "all";
+	sortBy?: "newest" | "oldest";
+	searchQuery?: string;
+	page?: number;
+	perPage?: number;
 }
 
-export async function getReviewCount() {
-	const session = await requireSession();
-
-	const count = await prisma.review.count({
-		where: {
-			repository: {
-				userid: session.id,
-			},
-		},
-	});
-
-	return count;
+export interface PaginatedResult<T> {
+	data: T[];
+	total: number;
+	page: number;
+	perPage: number;
+	totalPages: number;
 }
 
-export async function getPendingReviewCount() {
-	let session;
-	try {
-		session = await requireSession();
-	} catch {
-		return 0;
-	}
-
-	const count = await prisma.review.count({
-		where: {
-			repository: {
-				userid: session.id,
-			},
-			status: "pending",
-		},
+export async function getReviews(
+	filters: ReviewFilters = {}
+): Promise<PaginatedResult<any>> {
+	const session = await auth.api.getSession({
+		headers: await headers(),
 	});
 
-	return count;
-}
-
-export async function retryFailedReview(reviewId: string) {
-	const session = await requireSession();
-
-	const review = await prisma.review.findUnique({
-		where: { id: reviewId },
-		include: { repository: true },
-	});
-
-	if (!review) {
-		throw new Error("Review not found");
-	}
-
-	if (review.repository.userid !== session.id) {
+	if (!session) {
 		throw new Error("Unauthorized");
 	}
 
-	if (review.status !== "failed") {
-		throw new Error("Only failed reviews can be retried");
+	const {
+		status = "all",
+		sortBy = "newest",
+		searchQuery = "",
+		page = 1,
+		perPage = 10,
+	} = filters;
+
+	const where: any = {
+		repository: {
+			userid: session.user.id,
+		},
+	};
+
+	if (status !== "all") {
+		where.status = status;
 	}
 
-	const { reviewPullRequest } = await import("@/module/ai/actions");
-	const result = await reviewPullRequest(
-		review.repository.owner,
-		review.repository.name,
-		review.prNumber
-	);
+	if (searchQuery.trim()) {
+		where.prTitle = {
+			contains: searchQuery.trim(),
+		};
+	}
 
-	return result;
+	const [total, reviews] = await Promise.all([
+		prisma.review.count({ where }),
+		prisma.review.findMany({
+			where,
+			include: {
+				repository: true,
+			},
+			orderBy: {
+				createdAt: sortBy === "oldest" ? "asc" : "desc",
+			},
+			skip: (page - 1) * perPage,
+			take: perPage,
+		}),
+	]);
+
+	return {
+		data: reviews,
+		total,
+		page,
+		perPage,
+		totalPages: Math.ceil(total / perPage),
+	};
 }
