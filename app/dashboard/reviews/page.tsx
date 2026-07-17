@@ -20,22 +20,15 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	ExternalLink,
-	Clock,
-	CheckCircle2,
-	XCircle,
-	Clipboard,
-	ClipboardCheck,
-	SearchX,
-} from "lucide-react";
+import { ExternalLink, Clock, CheckCircle2, XCircle, Clipboard, ClipboardCheck, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useReviews, type ReviewFilters } from "@/module/review/hooks/use-reviews";
-import { ReviewFilters as ReviewFiltersComponent, type StatusFilter, type SortOption } from "@/module/review/components/review-filters";
-import { ReviewPagination } from "@/module/review/components/review-pagination";
+import { getReviews } from "@/module/review/actions";
+import { useReviewPoller } from "@/module/review/hooks/use-review-poller";
+import { PendingReviewsBadge } from "@/module/review/components/pending-reviews-badge";
 
 function parseInline(text: string) {
 	const regex = /(\*\*.*?\*\*|`.*?`)/g;
@@ -183,10 +176,17 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
 }
 
 export default function ReviewsPageClient() {
-	const [page, setPage] = useState(1);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-	const [sortBy, setSortBy] = useState<SortOption>("newest");
+	useReviewPoller();
+
+	const { data: reviews, isLoading } = useQuery({
+		queryKey: ["reviews"],
+		queryFn: async ({ pageParam }) => {
+			const result = await getReviews(pageParam as string | undefined);
+			return result;
+		},
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+		initialPageParam: undefined as string | undefined,
+	});
 
 	const filters: ReviewFilters = useMemo(() => ({
 		page,
@@ -219,13 +219,16 @@ export default function ReviewsPageClient() {
 	if (isLoading) {
 		return (
 			<div className="space-y-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">
-						Review History
-					</h1>
-					<p className="text-muted-foreground">
-						View all AI code reviews
-					</p>
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">
+							Review History
+						</h1>
+						<p className="text-muted-foreground">
+							View all AI code reviews
+						</p>
+					</div>
+					<PendingReviewsBadge />
 				</div>
 				<div className="animate-pulse space-y-4">
 					<div className="h-10 bg-muted rounded-lg" />
@@ -242,15 +245,16 @@ export default function ReviewsPageClient() {
 
 	return (
 		<div className="space-y-4">
-			<div>
-				<h1 className="text-3xl font-bold tracking-tight">
-					Review History
-				</h1>
-				<p className="text-muted-foreground">
-					{totalCount !== undefined
-						? `View all AI code reviews (${totalCount} total)`
-						: "View all AI code reviews"}
-				</p>
+			<div className="flex items-center justify-between">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight">
+						Review History
+					</h1>
+					<p className="text-muted-foreground">
+						View all AI code reviews
+					</p>
+				</div>
+				<PendingReviewsBadge />
 			</div>
 
 			<ReviewFiltersComponent
