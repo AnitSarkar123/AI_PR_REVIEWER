@@ -7,6 +7,9 @@ import { RefreshCw, GitCommit } from "lucide-react";
 
 import { getContributionStats } from "../actions";
 
+/**
+ * Displays the user's GitHub contribution activity over the last year in a heatmap calendar.
+ */
 const ContributionGraph = () => {
 	const { theme } = useTheme();
 
