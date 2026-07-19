@@ -1,7 +1,8 @@
 import { Octokit } from 'octokit';
 
+import { getGithubToken as getGithubTokenFn } from './tokens';
+
 export const getGithubToken = async () => {
-    const { getGithubToken: getGithubTokenFn } = await import('./token');
     return getGithubTokenFn();
 };
 
