@@ -29,7 +29,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
-import ContributionGraph from '../../module/dashboard/components/contribution-graph';
+import { ContributionCalendarView } from '@/module/dashboard/components/contribution/calendar-view';
 import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
 
 
@@ -160,7 +160,7 @@ const Mainpage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ContributionGraph />
+          <ContributionCalendarView />
         </CardContent>
       </Card>
       <div className="grid gap-4 md:grid-cols-2">

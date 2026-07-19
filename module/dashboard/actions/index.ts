@@ -36,8 +36,8 @@ export async function getContributionStats() {
           }))
         )
         return {
-            totalContributions: calendar.totalContributions,
-            contributions: contribution
+            total: calendar.totalContributions,
+            calendar: contribution
         }
     }
     catch (error) {
