@@ -232,6 +232,7 @@ export function RepositoryList() {
 											variant={"ghost"}
 											size={"sm"}
 											className="ml-4 text-destructive hover:text-destructive hover:bg-destructive/10"
+											aria-label={`Disconnect repository ${repo.fullName}`}
 										>
 											<Trash2 className="h-4 w-4" />
 										</Button>
