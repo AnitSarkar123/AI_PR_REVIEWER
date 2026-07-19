@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 
 import { getUserProfile, updateUserProfile } from "../actions";
-import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useUnsavedChanges } from "@/hooks/unsaved-changes/use-spa-interceptor";
 
 function validateEmail(email: string): string | null {
 	if (!email) return null;
