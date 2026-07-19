@@ -10,13 +10,14 @@ export const fetchUserContribution = async (token: string, username: string) => 
     return fetchUserContributionFn(token, username);
 };
 
+import { createWebhook as createWebhookFn } from './webhooks/create';
+import { deleteWebhook as deleteWebhookFn } from './webhooks/delete';
+
 export const createWebhook = async (owner: string, repo: string) => {
-    const { createWebhook: createWebhookFn } = await import('./webhook');
     return createWebhookFn(owner, repo);
 };
 
 export const deleteWebhook = async (owner: string, repo: string) => {
-    const { deleteWebhook: deleteWebhookFn } = await import('./webhook');
     return deleteWebhookFn(owner, repo);
 };
 
