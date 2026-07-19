@@ -10,13 +10,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useState, useEffect, useRef } from "react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
-
-import { getUserProfile, updateUserProfile } from "../actions";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { updateUserProfile } from "../actions";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+
+interface ProfileEditFormProps {
+	profile: {
+		name: string;
+		email: string;
+	};
+	onCancel: () => void;
+}
 
 function validateEmail(email: string): string | null {
 	if (!email) return null;
@@ -25,31 +32,16 @@ function validateEmail(email: string): string | null {
 	return null;
 }
 
-export function ProfileForm() {
+export function ProfileEditForm({ profile, onCancel }: ProfileEditFormProps) {
 	const queryClient = useQueryClient();
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const initialRef = useRef({ name: "", email: "" });
+	const [name, setName] = useState(profile.name);
+	const [email, setEmail] = useState(profile.email);
+	const initialRef = useRef({ name: profile.name, email: profile.email });
 
 	const hasUnsavedChanges = name !== initialRef.current.name || email !== initialRef.current.email;
 	useUnsavedChanges(hasUnsavedChanges);
 
 	const emailError = email ? validateEmail(email) : null;
-
-	const { data: profile, isLoading } = useQuery({
-		queryKey: ["user-profile"],
-		queryFn: async () => await getUserProfile(),
-		staleTime: 5 * 60 * 1000,
-		refetchOnWindowFocus: false,
-	});
-
-	useEffect(() => {
-		if (profile) {
-			setName(profile.name || "");
-			setEmail(profile.email || "");
-			initialRef.current = { name: profile.name || "", email: profile.email || "" };
-		}
-	}, [profile]);
 
 	const updateMutation = useMutation({
 		mutationFn: async (data: { name: string; email: string }) => {
@@ -60,6 +52,7 @@ export function ProfileForm() {
 				queryClient.invalidateQueries({ queryKey: ["user-profile"] });
 				initialRef.current = { name, email };
 				toast.success("Profile updated successfully");
+				onCancel();
 			} else {
 				toast.error("Failed to update profile", {
 					description: result?.error || "An unexpected error occurred.",
@@ -87,33 +80,12 @@ export function ProfileForm() {
 		setEmail(initialRef.current.email);
 	};
 
-	const isValid = !emailError || !email;
-
-	if (isLoading) {
-		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Profile Settings</CardTitle>
-					<CardDescription>
-						Update your profile information
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="animate-pulse space-y-4">
-						<div className="h-10 bg-muted rounded" />
-						<div className="h-10 bg-muted rounded" />
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
-
 	return (
-		<Card>
+		<Card className="border-border/80">
 			<CardHeader>
-				<CardTitle>Profile Settings</CardTitle>
+				<CardTitle>Edit Profile Settings</CardTitle>
 				<CardDescription>
-					Update your profile information
+					Update your account details below
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -154,18 +126,20 @@ export function ProfileForm() {
 						</div>
 					)}
 
-					{updateMutation.isSuccess && updateMutation.data?.success && (
-						<div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-2">
-							<CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-							<span>Profile saved successfully</span>
-						</div>
-					)}
-
 					<div className="flex items-center gap-3">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={onCancel}
+							disabled={updateMutation.isPending}
+						>
+							Cancel
+						</Button>
 						{hasUnsavedChanges && (
 							<Button
 								type="button"
-								variant="outline"
+								variant="ghost"
 								size="sm"
 								onClick={handleReset}
 								disabled={updateMutation.isPending}
@@ -175,6 +149,7 @@ export function ProfileForm() {
 						)}
 						<Button
 							type="submit"
+							size="sm"
 							disabled={updateMutation.isPending || !hasUnsavedChanges || !!emailError}
 						>
 							{updateMutation.isPending ? (
