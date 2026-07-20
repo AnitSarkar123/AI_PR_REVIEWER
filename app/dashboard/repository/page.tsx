@@ -1,23 +1,15 @@
 "use client";
 
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Star, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 
 import { useRepositories } from "@/module/repository/hooks/use-repositories";
-import { RepositoryListSkeleton } from "@/module/repository/components/repository-skeleton";
+import { RepositoryListSkeleton } from "@/module/repository/components/skeletons/list-skeleton";
 import { useConnectRepository } from "@/module/repository/hooks/use-connect-repository";
 import { RepositoryEmptyState } from "@/module/repository/components/repository-empty-state";
 import { useDebounce } from "@/hooks/use-debounce";
+import { RepositoryCard } from "@/module/repository/components/repository-card";
 
 interface Repository {
 	id: number;
@@ -148,78 +140,12 @@ const RepositoryPageClient = () => {
 				<>
 					<div className="grid gap-4">
 						{filteredRepositories.map((repo: any) => (
-							<Card
+							<RepositoryCard
 								key={repo.id}
-								className="hover:shadow-md transition-shadow"
-							>
-								<CardHeader>
-									<div className="flex items-center justify-between">
-										<div className="space-y-2 flex-1">
-											<div className="flex items-center gap-2">
-												<CardTitle className="text-lg">
-													{repo.name}
-												</CardTitle>
-												<Badge variant={"outline"}>
-													{repo.language || "Unknown"}
-												</Badge>
-												{repo.isConnected && (
-													<Badge variant={"secondary"}>
-														Connected
-													</Badge>
-												)}
-											</div>
-											<CardDescription>
-												{repo.description}
-											</CardDescription>
-										</div>
-										<div className="flex gap-2">
-											<Button variant="ghost" size="icon" asChild>
-												<a
-													href={repo.html_url}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													<ExternalLink className="h-4 w-4" />
-												</a>
-											</Button>
-											<Button
-												onClick={() => handleConnect(repo)}
-												disabled={
-													localConnectingId === repo.id ||
-													repo.isConnected
-												}
-												variant={
-													repo.isConnected
-														? "ghost"
-														: "default"
-												}
-											>
-												{localConnectingId === repo.id
-													? "Connecting..."
-													: repo.isConnected
-													? "Connected"
-													: "Connect"}
-											</Button>
-										</div>
-									</div>
-								</CardHeader>
-								<CardContent>
-									<div className="flex items-center gap-2">
-										<div className="flex items-center gap-1">
-											<Star
-												className="h-4 w-4 text-primary"
-												fill="#ffe0c2"
-											/>
-											<p>{repo.stargazers_count}</p>
-										</div>
-										{repo.topics.map((topic: string) => (
-											<Badge key={topic} variant="outline">
-												{topic}
-											</Badge>
-										))}
-									</div>
-								</CardContent>
-							</Card>
+								repo={repo}
+								onConnect={handleConnect}
+								isConnecting={localConnectingId === repo.id}
+							/>
 						))}
 					</div>
 
