@@ -15,7 +15,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { updateUserProfile } from "../actions";
-import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useUnsavedChanges } from "@/hooks/unsaved-changes/use-spa-interceptor";
 
 interface ProfileEditFormProps {
 	profile: {
