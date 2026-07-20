@@ -1,39 +1,42 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getPendingReviewCount } from "../actions/pending-count";
 
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 10000;
 
 export function useReviewPoller() {
 	const queryClient = useQueryClient();
-	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const previousPendingRef = useRef<number>(0);
+
+	const { data: pendingCount } = useQuery({
+		queryKey: ["pending-review-count"],
+		queryFn: getPendingReviewCount,
+		refetchInterval: POLL_INTERVAL,
+		staleTime: 5000,
+	});
 
 	const poll = useCallback(async () => {
 		try {
-			const pendingCount = await getPendingReviewCount();
+			const count = pendingCount ?? 0;
 			const prev = previousPendingRef.current;
 
-			if (pendingCount < prev) {
+			if (count !== prev) {
 				queryClient.invalidateQueries({ queryKey: ["reviews"] });
+				queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+				queryClient.invalidateQueries({ queryKey: ["webhook-activity"] });
 			}
 
-			previousPendingRef.current = pendingCount;
+			previousPendingRef.current = count;
 		} catch {
 			// Silently fail — polling should not disrupt the UI
 		}
-	}, [queryClient]);
+	}, [pendingCount, queryClient]);
 
 	useEffect(() => {
 		poll();
-		intervalRef.current = setInterval(poll, POLL_INTERVAL);
-
-		return () => {
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-			}
-		};
 	}, [poll]);
+
+	return { pendingCount: pendingCount || 0 };
 }

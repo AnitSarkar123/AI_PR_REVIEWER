@@ -53,7 +53,7 @@ export async function getReviewForExport(
 	return review;
 }
 
-export function formatReviewAsMarkdown(review: ExportReview): string {
+function formatReviewAsMarkdown(review: ExportReview): string {
 	const lines: string[] = [];
 
 	lines.push(`# AI Code Review: ${review.prTitle}`);
@@ -76,7 +76,7 @@ export function formatReviewAsMarkdown(review: ExportReview): string {
 	return lines.join("\n");
 }
 
-export function formatReviewAsJson(review: ExportReview): string {
+function formatReviewAsJson(review: ExportReview): string {
 	return JSON.stringify(
 		{
 			metadata: {

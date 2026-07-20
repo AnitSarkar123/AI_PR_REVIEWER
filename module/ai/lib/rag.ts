@@ -11,6 +11,9 @@ export async function generateEmbeddings(text: string) {
     return embedding;
 }
 
+/**
+ * Indexes the given codebase files into Pinecone database after generating embeddings.
+ */
 export async function indexCodebase(repoId: string,files:{path:string,content:string}[]) {
     const vectors =[];
     

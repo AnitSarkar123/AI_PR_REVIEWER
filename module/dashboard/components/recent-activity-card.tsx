@@ -43,6 +43,9 @@ const typeConfig: Record<
 	},
 };
 
+/**
+ * Component to render the specific icon for each activity type.
+ */
 function ActivityIcon({ item }: { item: ActivityItem }) {
 	const base = typeConfig[item.type] || typeConfig.review;
 
