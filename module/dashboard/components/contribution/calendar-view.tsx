@@ -83,8 +83,8 @@ export function ContributionCalendarView() {
 							dark: ["rgba(255,255,255,0.05)", "rgba(59, 130, 246, 0.2)", "rgba(59, 130, 246, 0.45)", "rgba(59, 130, 246, 0.75)", "var(--primary)"],
 						}}
 						colorScheme={blockTheme}
-						hideColorLegend
-						hideTotalCount
+						showColorLegend={false}
+						showTotalCount={false}
 					/>
 				) : (
 					<div className="h-[120px] w-full bg-muted/20 animate-pulse rounded" />

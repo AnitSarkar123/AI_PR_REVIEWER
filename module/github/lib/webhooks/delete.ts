@@ -1,5 +1,5 @@
 import { Octokit } from 'octokit';
-import { getGithubToken } from '../token';
+import { getGithubToken } from '../tokens';
 
 export const deleteWebhook = async (owner: string, repo: string) => {
     const token = await getGithubToken();

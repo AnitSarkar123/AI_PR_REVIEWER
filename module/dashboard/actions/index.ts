@@ -1,6 +1,6 @@
 "use server"
 import { fetchUserContribution, ContributionCalendar } from '@/module/github/lib/contributions';
-import { getGithubToken } from '@/module/github/lib/token';
+import { getGithubToken } from '@/module/github/lib/tokens';
 
 import { Octokit } from 'octokit';
 import prisma from '@/lib/db';
