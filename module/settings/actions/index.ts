@@ -85,6 +85,9 @@ export async function getConnectedRepositories(){
         
     }
 }
+/**
+ * Disconnects a repository by deleting its webhook and removing it from the database.
+ */
 export async function disconnectRepository(repositoryId: string){
     try {
         const session = await requireSession()

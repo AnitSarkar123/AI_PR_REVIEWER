@@ -15,6 +15,9 @@ async function fetchWebhookStatus(owner: string, repo: string) {
   return checkWebhookHealth(owner, repo);
 }
 
+/**
+ * Renders a badge showing the health and delivery status of the repository's GitHub webhook.
+ */
 export function WebhookStatusBadge({ owner, repo }: WebhookStatusBadgeProps) {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["webhook-health", owner, repo],

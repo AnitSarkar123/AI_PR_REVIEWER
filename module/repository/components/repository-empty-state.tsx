@@ -8,6 +8,9 @@ interface RepositoryEmptyStateProps {
 	onRetry?: () => void;
 }
 
+/**
+ * Renders empty or error state card views for the repository list screen.
+ */
 export function RepositoryEmptyState({
 	type,
 	searchQuery,

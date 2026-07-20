@@ -1,7 +1,5 @@
 "use client";
 
-import { UsageRing } from "./usage-ring";
-
 interface UsageProgressCardProps {
 	title: string;
 	description?: string;
@@ -24,11 +22,9 @@ export function UsageProgressCard({
 
 	return (
 		<div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors">
-			<UsageRing value={value} max={limit} />
-
+			{icon && <div className="p-2 bg-primary/10 rounded-lg text-primary">{icon}</div>}
 			<div className="flex-1 min-w-0 space-y-1">
 				<div className="flex items-center gap-2">
-					{icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
 					<h4 className="text-sm font-medium text-foreground truncate">
 						{title}
 					</h4>

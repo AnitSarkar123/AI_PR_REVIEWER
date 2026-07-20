@@ -1,6 +1,5 @@
 "use client";
 
-
 import {
 	Card,
 	CardContent,
@@ -9,8 +8,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, X, ExternalLink, RefreshCw, Loader2 } from "lucide-react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +20,7 @@ import { getSubscriptionData ,syncSubscriptionStatus} from "@/module/payment/act
 import { Spinner } from "@/components/ui/spinner";
 import { UsageProgressCard } from "@/module/payment/components/usage-progress-card";
 import { TierComparisonTable } from "@/module/payment/components/tier-comparison-table";
+import { SubscriptionCard } from "@/module/payment/components/subscription-card";
 
 const PLAN_FEATURE = {
 	free: [
@@ -216,16 +215,6 @@ export default function SubscriptionPageClient() {
 				</Alert>
 			)}
 
-			{success === "true" && !isAutoSyncing && (
-				<Alert className="border-emerald-500/35 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400">
-					<Check className="h-4 w-4 text-emerald-500 shrink-0" />
-					<AlertTitle className="font-semibold text-emerald-700 dark:text-emerald-300">Upgrade Completed!</AlertTitle>
-					<AlertDescription className="text-muted-foreground text-xs mt-1">
-						Your account has been successfully upgraded to the Pro plan. Thank you for your support!
-					</AlertDescription>
-				</Alert>
-			)}
-
 			{/* Current Usage */}
 			{data.limits && (
 				<Card>
@@ -235,7 +224,7 @@ export default function SubscriptionPageClient() {
 							Your current plan limits and usage
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-3">
+					<CardContent className="grid gap-4 sm:grid-cols-2">
 						<UsageProgressCard
 							title="Connected Repositories"
 							description={
@@ -269,139 +258,26 @@ export default function SubscriptionPageClient() {
 
 			{/* Plans */}
 			<div className="grid gap-6 md:grid-cols-2">
-				{/* Free Plan */}
-				<Card className={!isPro ? "ring-2 ring-primary" : ""}>
-					<CardHeader>
-						<div className="flex items-center justify-between">
-							<div>
-								<CardTitle>Free Plan</CardTitle>
-								<CardDescription>
-									Perfect for getting started
-								</CardDescription>
-							</div>
-							{!isPro && (
-								<Badge className="ml-2">Current Plan</Badge>
-							)}
-						</div>
-						<div className="mt-2">
-							<span className="text-3xl font-bold">$0</span>
-							<span className="text-muted-foreground">
-								/month
-							</span>
-						</div>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							{PLAN_FEATURE.free.map((feature) => (
-								<div
-									key={feature.name}
-									className="flex items-center gap-2"
-								>
-									{feature.included ? (
-										<Check className="h-4 w-4 text-primary shrink-0" />
-									) : (
-										<X className="h-4 w-4 text-muted-foreground shrink-0" />
-									)}
-									<span
-										className={
-											feature.included
-												? ""
-												: "text-muted-foreground"
-										}
-									>
-										{feature.name}
-									</span>
-								</div>
-							))}
-						</div>
-						<Button className="w-full" variant={"outline"} disabled>
-							{!isPro ? "Current Plan" : "Downgrade"}
-						</Button>
-					</CardContent>
-				</Card>
+				<SubscriptionCard
+					title="Free Plan"
+					description="Perfect for getting started"
+					price="$0"
+					features={PLAN_FEATURE.free}
+					isCurrent={!isPro}
+					actionLabel="Current Plan"
+					actionDisabled={true}
+				/>
 
-				{/* Pro Plan */}
-				<Card className={isPro ? "ring-2 ring-primary" : ""}>
-					<CardHeader>
-						<div className="flex items-center justify-between">
-							<div>
-								<CardTitle>Pro Plan</CardTitle>
-								<CardDescription>
-									For professional developers
-								</CardDescription>
-							</div>
-							{isPro && (
-								<Badge className="ml-2">Current Plan</Badge>
-							)}
-						</div>
-						<div className="mt-2">
-							<span className="text-3xl font-bold">$9.99</span>
-							<span className="text-muted-foreground">
-								/month
-							</span>
-						</div>
-					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							{PLAN_FEATURE.pro.map((feature) => (
-								<div
-									key={feature.name}
-									className="flex items-center gap-2"
-								>
-									{feature.included ? (
-										<Check className="h-4 w-4 text-primary shrink-0" />
-									) : (
-										<X className="h-4 w-4 text-muted-foreground shrink-0" />
-									)}
-									<span
-										className={
-											feature.included
-												? ""
-												: "text-muted-foreground"
-										}
-									>
-										{feature.name}
-									</span>
-								</div>
-							))}
-						</div>
-						{isPro && isActive ? (
-							<Button
-								className="w-full"
-								variant={"outline"}
-								onClick={handleManageSubscription}
-								disabled={portalLoading}
-							>
-								{portalLoading ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Opening portal...
-									</>
-								) : (
-									<>
-										Manage Subscription
-										<ExternalLink className="ml-2 h-4 w-4" />
-									</>
-								)}
-							</Button>
-						) : (
-							<Button
-								className="w-full"
-								onClick={handleUpgrade}
-								disabled={checkoutLoading}
-							>
-								{checkoutLoading ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Loading checkout...
-									</>
-								) : (
-									"Upgrade to Pro"
-								)}
-							</Button>
-						)}
-					</CardContent>
-				</Card>
+				<SubscriptionCard
+					title="Pro Plan"
+					description="For professional developers"
+					price="$9.99"
+					features={PLAN_FEATURE.pro}
+					isCurrent={isPro}
+					actionLabel={isPro && isActive ? "Manage Subscription" : "Upgrade to Pro"}
+					onAction={isPro && isActive ? handleManageSubscription : handleUpgrade}
+					actionLoading={isPro && isActive ? portalLoading : checkoutLoading}
+				/>
 			</div>
 
 			{/* Feature Comparison */}

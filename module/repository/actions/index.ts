@@ -1,8 +1,7 @@
 "use server"
 import prisma from "@/lib/db"
 import { requireSession } from "@/lib/server-action"
-import { createWebhook } from "@/module/github/lib/webhook"
-import { getRepositories } from "@/module/github/lib/github"
+import { getRepositories, createWebhook } from "@/module/github/lib/github"
 import { inngest } from "@/inngest/client"
 import { canConnectRepository, incrementRepositoryCount } from "@/module/payment/lib/subscription"
 

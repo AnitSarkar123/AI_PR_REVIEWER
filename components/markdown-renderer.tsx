@@ -65,6 +65,9 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
   );
 }
 
+/**
+ * Renders markdown content with support for code blocks and inline formatting.
+ */
 export function MarkdownRenderer({ content }: { content: string }) {
   const parts = content.split(/(```[\s\S]*?```)/g);
 

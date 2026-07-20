@@ -30,6 +30,9 @@ const FEATURES: TierFeature[] = [
 	{ name: "Advanced analytics", free: false, pro: true },
 ];
 
+/**
+ * Renders a table comparing pricing plans and their respective features.
+ */
 export function TierComparisonTable() {
 	return (
 		<div className="overflow-x-auto">
