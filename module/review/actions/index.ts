@@ -22,13 +22,7 @@ export interface PaginatedResult<T> {
 export async function getReviews(
 	filters: ReviewFilters = {}
 ): Promise<PaginatedResult<any>> {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
-		throw new Error("Unauthorized");
-	}
+	const session = await requireSession();
 
 	const {
 		status = "all",
@@ -40,7 +34,7 @@ export async function getReviews(
 
 	const where: any = {
 		repository: {
-			userid: session.user.id,
+			userid: session.id,
 		},
 	};
 
