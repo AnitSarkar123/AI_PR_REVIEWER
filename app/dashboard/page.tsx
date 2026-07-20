@@ -1,5 +1,5 @@
-"use client"
-import React from 'react'
+"use client";
+import React from 'react';
 
 import {
   Card,
@@ -25,13 +25,12 @@ import {
   GitBranch,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
-import ContributionGraph from '../../module/dashboard/components/contribution-graph';
+import ContributionGraph from '@/module/dashboard/components/contribution-graph';
 import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
-
+import { EmptyDashboardState } from '@/module/dashboard/components/onboarding/empty-state';
 
 const Mainpage = () => {
   const { data: stats, isLoading } = useQuery({
@@ -39,14 +38,14 @@ const Mainpage = () => {
     queryFn: async () => getDashboardStatus(),
     staleTime: 3 * 60 * 1000,
     refetchOnWindowFocus: false
+  });
 
-  })
   const { data: monthlyActivity, isLoading: isLoadingActivity } = useQuery({
     queryKey: ["monthly-activity"],
     queryFn: async () => getMonthlyActivity(),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false
-  })
+  });
 
   const hasNoData = !isLoading && stats && stats.totalRepos === 0 && stats.totalReviews === 0 && stats.TotalCommits === 0;
 
@@ -169,8 +168,7 @@ const Mainpage = () => {
           <CardHeader>
             <CardTitle>Activity Overview</CardTitle>
             <CardDescription>
-              Monthly breakdown of commits, PRs and reviews (last
-              6 months)
+              Monthly breakdown of commits, PRs and reviews (last 6 months)
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -232,13 +230,9 @@ const Mainpage = () => {
             )}
           </CardContent>
         </Card>
-
-        <RecentActivityCard />
-
       </div>
     </div>
-
-  )
+  );
 }
 
-export default Mainpage
+export default Mainpage;
