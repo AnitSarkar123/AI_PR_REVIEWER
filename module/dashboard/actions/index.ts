@@ -1,6 +1,6 @@
 "use server"
 import { fetchUserContribution, ContributionCalendar } from '@/module/github/lib/contributions';
-import { getGithubToken } from '@/module/github/lib/token';
+import { getGithubToken } from '@/module/github/lib/tokens';
 
 import { Octokit } from 'octokit';
 import prisma from '@/lib/db';
@@ -36,8 +36,8 @@ export async function getContributionStats() {
           }))
         )
         return {
-            totalContributions: calendar.totalContributions,
-            contributions: contribution
+            total: calendar.totalContributions,
+            calendar: contribution
         }
     }
     catch (error) {

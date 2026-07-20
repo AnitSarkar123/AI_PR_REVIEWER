@@ -19,11 +19,10 @@ export interface ActivityItem {
 }
 
 export async function getRecentActivity(limit: number = 10): Promise<ActivityItem[]> {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
-
-	if (!session) {
+	let session;
+	try {
+		session = await requireSession();
+	} catch {
 		return [];
 	}
 
@@ -32,7 +31,7 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityIte
 	const reviews = await prisma.review.findMany({
 		where: {
 			repository: {
-				userid: session.user.id,
+				userid: session.id,
 			},
 		},
 		include: {
@@ -69,7 +68,7 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityIte
 
 	const repositories = await prisma.repository.findMany({
 		where: {
-			userid: session.user.id,
+			userid: session.id,
 		},
 		orderBy: {
 			createdAt: "desc",

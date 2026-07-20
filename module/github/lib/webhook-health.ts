@@ -1,7 +1,7 @@
 "use server";
 
 import { Octokit } from "octokit";
-import { getGithubToken } from "./token";
+import { getGithubToken } from "./tokens";
 
 export interface WebhookStatus {
   exists: boolean;

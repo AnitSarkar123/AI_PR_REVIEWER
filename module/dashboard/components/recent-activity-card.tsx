@@ -22,6 +22,9 @@ import { formatDistanceToNow } from "date-fns";
 
 import { getRecentActivity, type ActivityItem } from "../actions/recent-activity";
 
+/**
+ * Configuration mapping activity types to corresponding icons and user-friendly labels.
+ */
 const typeConfig: Record<
 	string,
 	{ icon: React.ReactNode; label: string }
