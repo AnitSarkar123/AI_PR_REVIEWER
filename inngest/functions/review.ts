@@ -3,7 +3,7 @@ import { inngest } from "../client";
 import { getPullRequestDiff, postReviewComment } from "@/module/github/lib/github";
 import { retrieveContext } from "@/module/ai/lib/rag";
 import { generateText } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { getAIModel } from "@/lib/ai";
 
 export const generateReview = inngest.createFunction(
     { id: "generate-review", retries: 3 },
@@ -27,6 +27,12 @@ export const generateReview = inngest.createFunction(
                 }
                 const data = await getPullRequestDiff(account.accessToken, owner, repo, prNumber)
                 return { ...data, token: account.accessToken }
+            })
+
+            const repository = await step.run("fetch-repo", async () => {
+                return await prisma.repository.findFirst({
+                    where: { owner, name: repo }
+                })
             })
 
             const context = await step.run("retrive-context",
@@ -68,29 +74,28 @@ export const generateReview = inngest.createFunction(
             6. **Suggestions**: Specific code improvements.
             7. **Poem**: A short, creative poem summarizing the changes at the very end.
 
-            Format your response in markdown.`;
-                const openaiCompatible = createOpenAICompatible({
-                    baseURL: process.env.OPENAI_COMPATIBLE_BASE_URL || "http://localhost:8080/v1",
-                    name: 'example',
-                    apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
-                });
+            Please provide your response in valid JSON format ONLY, without markdown wrapping:
+            {
+              "review": "Your detailed markdown review...",
+              "score": 85
+            }
+            `;
                 const text = await generateText({
-                    model: openaiCompatible.chatModel(process.env.OPENAI_COMPATIBLE_MODEL || "gpt-4o-mini"),
+                    model: getAIModel(repository?.preferredModel || "google"),
                     prompt,
                 })
-                return text.output
+                try {
+                    const cleanText = text.output.replace(/\`\`\`json/g, '').replace(/\`\`\`/g, '').trim();
+                    return JSON.parse(cleanText);
+                } catch(e) {
+                    return { review: text.output, score: null };
+                }
             })
             await step.run("post-comment", async () => {
-                await postReviewComment(token, owner, repo, prNumber, review)
+                await postReviewComment(token, owner, repo, prNumber, review.review)
 
             })
             await step.run("save-review", async () => {
-                const repository = await prisma.repository.findFirst({
-                    where: {
-                        owner,
-                        name: repo
-                    }
-                })
                 if (repository) {
                     await prisma.review.create({
                         data: {
@@ -98,7 +103,8 @@ export const generateReview = inngest.createFunction(
                             prNumber,
                             prTitle: title,
                             prUrl: `https://github.com/${owner}/${repo}/pull/${prNumber}`,
-                            review,
+                            review: review.review,
+                            score: review.score,
                             status: "completed"
                         }
                     })
@@ -107,6 +113,19 @@ export const generateReview = inngest.createFunction(
 
                 }
             })
+            
+            await step.run("notify-slack", async () => {
+                if (repository?.slackWebhookUrl) {
+                    await fetch(repository.slackWebhookUrl, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            text: `✅ PR Review Completed for ${owner}/${repo}#${prNumber}\n*Title*: ${title}\n*Score*: ${review.score}/100\n<https://github.com/${owner}/${repo}/pull/${prNumber}|View PR>`
+                        })
+                    })
+                }
+            })
+
             console.log("[INNGEST] Review completed successfully for:", owner, repo, prNumber)
             return {
                 success: true

@@ -46,6 +46,8 @@ model Repository{
   userid String
   user User @relation(fields: [userid], references: [id], onDelete: Cascade)
   reviews Review[]
+  slackWebhookUrl String?
+  preferredModel String? @default("google")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -63,6 +65,7 @@ model Review {
 	prUrl        String
 	review       String     @db.Text
 	status       String     @default("completed")
+	score        Int?
 
 	createdAt    DateTime   @default(now())
 	updatedAt    DateTime   @updatedAt
