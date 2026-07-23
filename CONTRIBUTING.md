@@ -3,6 +3,7 @@
 Thank you for considering contributing to AI PR Reviewer! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
+
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
@@ -46,6 +47,7 @@ Use descriptive, hyphen-separated branch names with a type prefix:
 - `chore/` — Maintenance tasks
 
 Examples:
+
 - `fix/webhook-signature-verification`
 - `feat/review-export-markdown`
 - `docs/improve-installation-guide`
@@ -68,6 +70,7 @@ type(scope): description
 ```
 
 Types:
+
 - `fix:` — A bug fix
 - `feat:` — A new feature
 - `enhance:` — Enhancement to existing feature
@@ -78,6 +81,7 @@ Types:
 - `chore:` — Maintenance tasks
 
 Examples:
+
 ```
 fix: resolve sidebar overflow on mobile devices
 feat: add cursor-based pagination for reviews
@@ -96,6 +100,7 @@ refactor: extract webhook verification into shared utility
 ### PR Checklist
 
 Before submitting, ensure:
+
 - [ ] Code follows project conventions
 - [ ] Changes are focused on a single issue
 - [ ] Build passes without errors
@@ -148,6 +153,7 @@ module/
 ### Bug Reports
 
 Include:
+
 - Description of the issue
 - Steps to reproduce
 - Expected vs actual behavior
@@ -157,6 +163,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - Clear description of the proposed feature
 - Use case and motivation
 - Possible implementation approach (optional)

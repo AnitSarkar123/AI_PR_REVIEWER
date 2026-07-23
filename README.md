@@ -2,51 +2,50 @@
 
 AI-powered GitHub code review platform that automatically reviews pull requests, provides actionable feedback, tracks repository activity, and helps developers maintain code quality.
 
-
 ---
 
 ## ✨ Features
 
 ### 🤖 AI Code Reviews
 
-* Automatic pull request analysis
-* AI-generated review comments
-* Review history tracking
-* PR quality insights
+- Automatic pull request analysis
+- AI-generated review comments
+- Review history tracking
+- PR quality insights
 
 ### 📦 Repository Management
 
-* Connect GitHub repositories
-* Search and manage repositories
-* Repository activity tracking
-* GitHub integration
+- Connect GitHub repositories
+- Search and manage repositories
+- Repository activity tracking
+- GitHub integration
 
 ### 📊 Dashboard & Analytics
 
-* Contribution heatmap
-* Commit statistics
-* Pull request metrics
-* Monthly activity reports
+- Contribution heatmap
+- Commit statistics
+- Pull request metrics
+- Monthly activity reports
 
 ### 🔐 Authentication
 
-* Secure GitHub authentication
-* Session management
-* Protected routes
+- Secure GitHub authentication
+- Session management
+- Protected routes
 
 ### 💳 Subscription System
 
-* Free and Pro plans
-* Usage limits
-* Subscription management
-* Billing integration
+- Free and Pro plans
+- Usage limits
+- Subscription management
+- Billing integration
 
 ### ⚡ Background Processing
 
-* Automated repository indexing
-* Asynchronous review generation
-* Webhook handling
-* Event-driven workflows
+- Automated repository indexing
+- Asynchronous review generation
+- Webhook handling
+- Event-driven workflows
 
 ---
 
@@ -54,39 +53,39 @@ AI-powered GitHub code review platform that automatically reviews pull requests,
 
 ### Frontend
 
-* Next.js 16
-* React 19
-* TypeScript
-* Tailwind CSS v4
-* shadcn/ui
-* TanStack Query
-* Recharts
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- TanStack Query
+- Recharts
 
 ### Backend
 
-* Next.js Server Actions
-* Prisma ORM
-* PostgreSQL
-* Better Auth
+- Next.js Server Actions
+- Prisma ORM
+- PostgreSQL
+- Better Auth
 
 ### AI & Integrations
 
-* Google AI SDK
-* OpenAI Compatible SDK
-* GitHub API
-* Pinecone Vector Database
+- Google AI SDK
+- OpenAI Compatible SDK
+- GitHub API
+- Pinecone Vector Database
 
 ### Infrastructure
 
-* Inngest
-* Polar Payments
-* GitHub Webhooks
+- Inngest
+- Polar Payments
+- GitHub Webhooks
 
 ---
 
 ## 📂 Project Structure
 
-`````text
+```text
 Repository
 └──ai_pr_reviewer/
     ├── .env.example
@@ -210,7 +209,7 @@ Repository
         │   ├── documentation.md
         │   └── feature_request.md
         └── PULL_REQUEST_TEMPLATE.md
-`````
+```
 
 ---
 
@@ -338,7 +337,7 @@ For AI reviews to trigger automatically on pull requests:
 1. Go to your target GitHub repository → **Settings → Webhooks → Add webhook**
 2. Set:
    - **Payload URL:** `https://your-domain.com/api/webhooks/github`
-     *(use [ngrok](https://ngrok.com/) for local testing: `ngrok http 3000`)*
+     _(use [ngrok](https://ngrok.com/) for local testing: `ngrok http 3000`)_
    - **Content type:** `application/json`
    - **Events:** Select **Pull requests**
 3. Save the webhook
@@ -348,17 +347,19 @@ Once configured, opening or updating a PR will automatically trigger an AI revie
 ---
 
 ### 8. Start the Inngest Dev Server
+
 Inngest handles background jobs like automated PR review generation. You need to run it alongside the Next.js dev server.
 In a separate terminal, run:
+
 ```bash
 npx inngest-cli@latest dev
-````
+```
+
 This starts the Inngest dev server at http://localhost:8288 and connects to your Next.js app at http://localhost:3000/api/inngest.
 You can open the Inngest dashboard at http://localhost:8288 to monitor and replay background functions.
 
 > [!note]
 > Both servers must be running simultaneously — npm run dev in one terminal and npx inngest-cli@latest dev in another.
-
 
 ---
 
@@ -370,10 +371,11 @@ You can open the Inngest dashboard at http://localhost:8288 to monitor and repla
 4. Open or update a Pull Request.
 5. CodeHorse automatically:
 
-   * Receives webhook events
-   * Fetches PR changes
-   * Generates AI review
-   * Stores review results
+   - Receives webhook events
+   - Fetches PR changes
+   - Generates AI review
+   - Stores review results
+
 6. View reviews from the dashboard.
 
 ---
@@ -384,18 +386,17 @@ Add screenshots here:
 <img width="1536" height="826" alt="image" src="https://github.com/user-attachments/assets/5385d29f-4674-4e0a-8844-707ae5872b6b" />
 <img width="1536" height="788" alt="image" src="https://github.com/user-attachments/assets/54c65f03-7161-48cc-b9fd-5eea79c18c0b" />
 
-
 ---
 
 ## 🛣️ Roadmap
 
-* [ ] Inline review comments
-* [ ] Multi-model AI support
-* [ ] Team workspaces
-* [ ] Review quality scoring
-* [ ] Slack integration
-* [ ] GitLab support
-* [ ] Bitbucket support
+- [ ] Inline review comments
+- [ ] Multi-model AI support
+- [ ] Team workspaces
+- [ ] Review quality scoring
+- [ ] Slack integration
+- [ ] GitLab support
+- [ ] Bitbucket support
 
 ---
 
@@ -415,9 +416,9 @@ Please open an issue before submitting major changes.
 
 If you find this project useful:
 
-* Star the repository
-* Report bugs
-* Suggest features
-* Share feedback
+- Star the repository
+- Report bugs
+- Suggest features
+- Share feedback
 
 Built with ❤️ using Next.js, Prisma, GitHub APIs, and AI.

@@ -1,6 +1,6 @@
-"use client"
-import { useInfiniteQuery } from "@tanstack/react-query"
-import { fetchRepositories } from "../actions"
+'use client';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { fetchRepositories } from '../actions';
 
 interface Repository {
   id: number;
@@ -15,20 +15,20 @@ interface Repository {
 }
 
 export const useRepositories = () => {
-    return useInfiniteQuery<Repository[], Error>({
-        queryKey: ["repositories"],
-        queryFn: async ({ pageParam = 1 }) => {
-            const data = await fetchRepositories(pageParam as number, 10)
-            return data
-        },
-        getNextPageParam: (lastPage, allPages) => {
-            if (lastPage.length < 10) {
-                return undefined
-            }
-            return allPages.length + 1
-        },
-        initialPageParam: 1,
-        staleTime: 2 * 60 * 1000,
-        refetchOnWindowFocus: false,
-    })
-}
+  return useInfiniteQuery<Repository[], Error>({
+    queryKey: ['repositories'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const data = await fetchRepositories(pageParam as number, 10);
+      return data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 10) {
+        return undefined;
+      }
+      return allPages.length + 1;
+    },
+    initialPageParam: 1,
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+};

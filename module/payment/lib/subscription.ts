@@ -1,36 +1,35 @@
-"use server";
+'use server';
 
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
-
-export type SubscriptionTier = "FREE" | "PRO";
-export type SubscriptionStatus = "ACTIVE" | "CANCELLED" | "EXPIRED";
+export type SubscriptionTier = 'FREE' | 'PRO';
+export type SubscriptionStatus = 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
 
 export interface UserLimits {
-	tier: SubscriptionTier;
-	repositories: {
-		current: number;
-		limit: number | null; // null means unlimited
-		canAdd: boolean;
-	};
-	reviews: {
-		[repositoryId: string]: {
-			current: number;
-			limit: number | null;
-			canAdd: boolean;
-		};
-	};
+  tier: SubscriptionTier;
+  repositories: {
+    current: number;
+    limit: number | null; // null means unlimited
+    canAdd: boolean;
+  };
+  reviews: {
+    [repositoryId: string]: {
+      current: number;
+      limit: number | null;
+      canAdd: boolean;
+    };
+  };
 }
 
 const TIER_LIMITS = {
-	FREE: {
-		repositories: 5,
-		reviewsPerRepo: 5,
-	},
-	PRO: {
-		repositories: null, // unlimited
-		reviewsPerRepo: null, // unlimited
-	},
+  FREE: {
+    repositories: 5,
+    reviewsPerRepo: 5,
+  },
+  PRO: {
+    repositories: null, // unlimited
+    reviewsPerRepo: null, // unlimited
+  },
 } as const;
 
 /**
@@ -44,16 +43,16 @@ const TIER_LIMITS = {
  * @returns Promise resolving to subscription tier (FREE or PRO)
  */
 export async function getUserTier(userId: string): Promise<SubscriptionTier> {
-	const user = await prisma.user.findUnique({
-		where: {
-			id: userId,
-		},
-		select: {
-			subscriptionTier: true,
-		},
-	});
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: {
+      subscriptionTier: true,
+    },
+  });
 
-	return (user?.subscriptionTier as SubscriptionTier) || "FREE";
+  return (user?.subscriptionTier as SubscriptionTier) || 'FREE';
 }
 
 /**
@@ -62,23 +61,23 @@ export async function getUserTier(userId: string): Promise<SubscriptionTier> {
  * @returns UserUsage record.
  */
 async function getUserUsage(userId: string) {
-	let usage = await prisma.userUsage.findUnique({
-		where: {
-			userId: userId,
-		},
-	});
+  let usage = await prisma.userUsage.findUnique({
+    where: {
+      userId: userId,
+    },
+  });
 
-	if (!usage) {
-		usage = await prisma.userUsage.create({
-			data: {
-				userId: userId,
-				repositoryCount: 0,
-				reviewCounts: {},
-			},
-		});
-	}
+  if (!usage) {
+    usage = await prisma.userUsage.create({
+      data: {
+        userId: userId,
+        repositoryCount: 0,
+        reviewCounts: {},
+      },
+    });
+  }
 
-	return usage;
+  return usage;
 }
 
 /**
@@ -92,16 +91,16 @@ async function getUserUsage(userId: string) {
  * @returns Promise resolving to boolean indicating if repository can be connected
  */
 export async function canConnectRepository(userId: string) {
-	const tier = await getUserTier(userId);
+  const tier = await getUserTier(userId);
 
-	if (tier === "PRO") {
-		return true; // Unlimited for pro users
-	}
+  if (tier === 'PRO') {
+    return true; // Unlimited for pro users
+  }
 
-	const usage = await getUserUsage(userId);
-	const limit = TIER_LIMITS.FREE.repositories;
+  const usage = await getUserUsage(userId);
+  const limit = TIER_LIMITS.FREE.repositories;
 
-	return usage.repositoryCount < limit;
+  return usage.repositoryCount < limit;
 }
 
 /**
@@ -116,22 +115,19 @@ export async function canConnectRepository(userId: string) {
  * @param repositoryId - Repository identifier
  * @returns Promise resolving to boolean indicating if review can be created
  */
-export async function canCreateReview(
-	userId: string,
-	repositoryId: string
-): Promise<boolean> {
-	const tier = await getUserTier(userId);
+export async function canCreateReview(userId: string, repositoryId: string): Promise<boolean> {
+  const tier = await getUserTier(userId);
 
-	if (tier === "PRO") {
-		return true; // Unlimited for pro users
-	}
+  if (tier === 'PRO') {
+    return true; // Unlimited for pro users
+  }
 
-	const usage = await getUserUsage(userId);
-	const reviewCounts = usage.reviewCounts as Record<string, number>;
-	const currentCount = reviewCounts[repositoryId] || 0;
-	const limit = TIER_LIMITS.FREE.reviewsPerRepo;
+  const usage = await getUserUsage(userId);
+  const reviewCounts = usage.reviewCounts as Record<string, number>;
+  const currentCount = reviewCounts[repositoryId] || 0;
+  const limit = TIER_LIMITS.FREE.reviewsPerRepo;
 
-	return currentCount < limit;
+  return currentCount < limit;
 }
 
 /**
@@ -139,19 +135,19 @@ export async function canCreateReview(
  * @param userId - User ID.
  */
 export async function incrementRepositoryCount(userId: string): Promise<void> {
-	await prisma.userUsage.upsert({
-		where: { userId },
-		create: {
-			userId,
-			repositoryCount: 1,
-			reviewCounts: {},
-		},
-		update: {
-			repositoryCount: {
-				increment: 1,
-			},
-		},
-	});
+  await prisma.userUsage.upsert({
+    where: { userId },
+    create: {
+      userId,
+      repositoryCount: 1,
+      reviewCounts: {},
+    },
+    update: {
+      repositoryCount: {
+        increment: 1,
+      },
+    },
+  });
 }
 
 /**
@@ -159,14 +155,14 @@ export async function incrementRepositoryCount(userId: string): Promise<void> {
  * @param userId - User ID.
  */
 export async function decrementRepositoryCount(userId: string): Promise<void> {
-	const usage = await getUserUsage(userId);
+  const usage = await getUserUsage(userId);
 
-	await prisma.userUsage.update({
-		where: { userId },
-		data: {
-			repositoryCount: Math.max(0, usage.repositoryCount - 1),
-		},
-	});
+  await prisma.userUsage.update({
+    where: { userId },
+    data: {
+      repositoryCount: Math.max(0, usage.repositoryCount - 1),
+    },
+  });
 }
 
 /**
@@ -174,17 +170,17 @@ export async function decrementRepositoryCount(userId: string): Promise<void> {
  * @param userId - User ID.
  */
 export async function resetRepositoryCount(userId: string): Promise<void> {
-	await prisma.userUsage.upsert({
-		where: { userId },
-		create: {
-			userId,
-			repositoryCount: 0,
-			reviewCounts: {},
-		},
-		update: {
-			repositoryCount: 0,
-		},
-	});
+  await prisma.userUsage.upsert({
+    where: { userId },
+    create: {
+      userId,
+      repositoryCount: 0,
+      reviewCounts: {},
+    },
+    update: {
+      repositoryCount: 0,
+    },
+  });
 }
 
 /**
@@ -192,21 +188,18 @@ export async function resetRepositoryCount(userId: string): Promise<void> {
  * @param userId - User ID.
  * @param repositoryId - Repository ID.
  */
-export async function incrementReviewCount(
-	userId: string,
-	repositoryId: string
-): Promise<void> {
-	const usage = await getUserUsage(userId);
-	const reviewCounts = usage.reviewCounts as Record<string, number>;
+export async function incrementReviewCount(userId: string, repositoryId: string): Promise<void> {
+  const usage = await getUserUsage(userId);
+  const reviewCounts = usage.reviewCounts as Record<string, number>;
 
-	reviewCounts[repositoryId] = (reviewCounts[repositoryId] || 0) + 1;
+  reviewCounts[repositoryId] = (reviewCounts[repositoryId] || 0) + 1;
 
-	await prisma.userUsage.update({
-		where: { userId },
-		data: {
-			reviewCounts,
-		},
-	});
+  await prisma.userUsage.update({
+    where: { userId },
+    data: {
+      reviewCounts,
+    },
+  });
 }
 
 /**
@@ -215,41 +208,37 @@ export async function incrementReviewCount(
  * @returns Object with detailed limit information.
  */
 export async function getRemainingLimits(userId: string): Promise<UserLimits> {
-	const tier = await getUserTier(userId);
-	const usage = await getUserUsage(userId);
-	const reviewCounts = usage.reviewCounts as Record<string, number>;
+  const tier = await getUserTier(userId);
+  const usage = await getUserUsage(userId);
+  const reviewCounts = usage.reviewCounts as Record<string, number>;
 
-	const limits: UserLimits = {
-		tier,
-		repositories: {
-			current: usage.repositoryCount,
-			limit: tier === "PRO" ? null : TIER_LIMITS.FREE.repositories,
-			canAdd:
-				tier === "PRO" ||
-				usage.repositoryCount < TIER_LIMITS.FREE.repositories,
-		},
-		reviews: {},
-	};
+  const limits: UserLimits = {
+    tier,
+    repositories: {
+      current: usage.repositoryCount,
+      limit: tier === 'PRO' ? null : TIER_LIMITS.FREE.repositories,
+      canAdd: tier === 'PRO' || usage.repositoryCount < TIER_LIMITS.FREE.repositories,
+    },
+    reviews: {},
+  };
 
-	// Get all user's repositories
-	const repositories = await prisma.repository.findMany({
-		where: { userid: userId },
-		select: { id: true },
-	});
+  // Get all user's repositories
+  const repositories = await prisma.repository.findMany({
+    where: { userid: userId },
+    select: { id: true },
+  });
 
-	// Calculate limits for each repository
-	for (const repo of repositories) {
-		const currentCount = reviewCounts[repo.id] || 0;
-		limits.reviews[repo.id] = {
-			current: currentCount,
-			limit: tier === "PRO" ? null : TIER_LIMITS.FREE.reviewsPerRepo,
-			canAdd:
-				tier === "PRO" ||
-				currentCount < TIER_LIMITS.FREE.reviewsPerRepo,
-		};
-	}
+  // Calculate limits for each repository
+  for (const repo of repositories) {
+    const currentCount = reviewCounts[repo.id] || 0;
+    limits.reviews[repo.id] = {
+      current: currentCount,
+      limit: tier === 'PRO' ? null : TIER_LIMITS.FREE.reviewsPerRepo,
+      canAdd: tier === 'PRO' || currentCount < TIER_LIMITS.FREE.reviewsPerRepo,
+    };
+  }
 
-	return limits;
+  return limits;
 }
 
 /**
@@ -260,24 +249,24 @@ export async function getRemainingLimits(userId: string): Promise<UserLimits> {
  * @param polarSubscriptionId - Optional Polar subscription ID.
  */
 export async function updateUserTier(
-	userId: string,
-	tier: SubscriptionTier,
-	status: SubscriptionStatus,
-	polarSubscriptionId?: string
+  userId: string,
+  tier: SubscriptionTier,
+  status: SubscriptionStatus,
+  polarSubscriptionId?: string,
 ): Promise<void> {
-	const updateData: Record<string, string | null> = {
-		subscriptionTier: tier,
-		subscriptionStatus: status,
-	};
+  const updateData: Record<string, string | null> = {
+    subscriptionTier: tier,
+    subscriptionStatus: status,
+  };
 
-	if (polarSubscriptionId !== undefined) {
-		updateData.polarSubscriptionId = polarSubscriptionId;
-	}
+  if (polarSubscriptionId !== undefined) {
+    updateData.polarSubscriptionId = polarSubscriptionId;
+  }
 
-	await prisma.user.update({
-		where: { id: userId },
-		data: updateData,
-	});
+  await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+  });
 }
 
 /**
@@ -286,14 +275,13 @@ export async function updateUserTier(
  * @param polarCustomerId - Polar Customer ID.
  */
 export async function updatePolarCustomerId(
-	userId: string,
-	polarCustomerId: string
+  userId: string,
+  polarCustomerId: string,
 ): Promise<void> {
-	await prisma.user.update({
-		where: { id: userId },
-		data: {
-			polarCustomerId,
-		},
-	});
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      polarCustomerId,
+    },
+  });
 }
-

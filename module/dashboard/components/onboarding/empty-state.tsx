@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { GitBranch, GitPullRequest, MessageSquare, Github, Bot } from "lucide-react";
-import { OnboardingWizard } from "./wizard";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { GitBranch, GitPullRequest, MessageSquare, Github, Bot } from 'lucide-react';
+import { OnboardingWizard } from './wizard';
 
 export function EmptyDashboardState() {
   return (
@@ -17,8 +17,8 @@ export function EmptyDashboardState() {
           Welcome to AI PR Reviewer
         </h2>
         <p className="text-muted-foreground max-w-md mx-auto text-sm">
-          Get started by connecting your first GitHub repository. We will
-          automatically review every pull request you open.
+          Get started by connecting your first GitHub repository. We will automatically review every
+          pull request you open.
         </p>
       </div>
 
@@ -31,9 +31,7 @@ export function EmptyDashboardState() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-muted-foreground/45">0</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Connected Repositories
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Connected Repositories</p>
           </CardContent>
         </Card>
         <Card className="border-dashed border-muted-foreground/20 bg-muted/10">
@@ -42,9 +40,7 @@ export function EmptyDashboardState() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-muted-foreground/45">0</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Pull Requests Reviewed
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Pull Requests Reviewed</p>
           </CardContent>
         </Card>
         <Card className="border-dashed border-muted-foreground/20 bg-muted/10">
@@ -53,9 +49,7 @@ export function EmptyDashboardState() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-muted-foreground/45">0</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              AI Reviews Generated
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">AI Reviews Generated</p>
           </CardContent>
         </Card>
         <Card className="border-dashed border-muted-foreground/20 bg-muted/10">
@@ -64,9 +58,7 @@ export function EmptyDashboardState() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-muted-foreground/45">0</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              GitHub Contributions
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">GitHub Contributions</p>
           </CardContent>
         </Card>
       </div>

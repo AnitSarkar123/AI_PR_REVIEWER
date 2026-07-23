@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { Octokit } from "octokit";
-import { getGithubToken } from "./tokens";
+import { Octokit } from 'octokit';
+import { getGithubToken } from './tokens';
 
 export interface WebhookStatus {
   exists: boolean;
@@ -23,7 +23,15 @@ export async function checkWebhookHealth(owner: string, repo: string): Promise<W
 
     const targetHook = hooks.find((h) => h.config?.url === webhookUrl);
     if (!targetHook) {
-      return { exists: false, id: null, active: false, lastDelivery: null, lastResponse: null, events: [], url: null };
+      return {
+        exists: false,
+        id: null,
+        active: false,
+        lastDelivery: null,
+        lastResponse: null,
+        events: [],
+        url: null,
+      };
     }
 
     let lastDelivery: string | null = null;
@@ -54,6 +62,14 @@ export async function checkWebhookHealth(owner: string, repo: string): Promise<W
     };
   } catch (error) {
     console.error(`[WebhookHealth] Error checking webhook for ${owner}/${repo}:`, error);
-    return { exists: false, id: null, active: false, lastDelivery: null, lastResponse: null, events: [], url: null };
+    return {
+      exists: false,
+      id: null,
+      active: false,
+      lastDelivery: null,
+      lastResponse: null,
+      events: [],
+      url: null,
+    };
   }
 }

@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/ai_pr_reviewer
     depends_on:
@@ -15,4 +15,4 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: ai_pr_reviewer
     ports:
-      - "5432:5432"
+      - '5432:5432'
