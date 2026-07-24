@@ -1,3 +1,3 @@
 export interface UnsavedChangesConfig {
-	message?: string;
+  message?: string;
 }

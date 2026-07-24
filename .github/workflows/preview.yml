@@ -5,20 +5,20 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 on:
-  pull_request_target:        # fires for ALL PRs including forks, has access to secrets
+  pull_request_target: # fires for ALL PRs including forks, has access to secrets
     types: [opened, synchronize, reopened]
 
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write    # needed to post the preview URL comment on PR
+      pull-requests: write # needed to post the preview URL comment on PR
 
     steps:
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}   # checks out the fork/branch code
+          ref: ${{ github.event.pull_request.head.sha }} # checks out the fork/branch code
 
       - name: Install Vercel CLI
         run: npm install -g vercel

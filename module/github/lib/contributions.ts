@@ -26,13 +26,13 @@ interface GraphQLResponse {
 export type { ContributionCalendar, ContributionWeek, ContributionDay };
 
 export async function fetchUserContribution(
-    token: string,
-    username: string
+  token: string,
+  username: string,
 ): Promise<ContributionCalendar | null> {
-    const octokit = new Octokit({
-        auth: token
-    })
-    const query = `
+  const octokit = new Octokit({
+    auth: token,
+  });
+  const query = `
 query($username: String!) {
     user(login: $username) {
       contributionsCollection {
@@ -49,15 +49,14 @@ query($username: String!) {
       }
     }
   }
-`
-    try {
-        const response = await octokit.graphql<GraphQLResponse>(query, {
-            username
-        })
-        return response.user.contributionsCollection.contributionCalendar
-    }
-    catch (error) {
-        console.error("Error fetching user contribution data:", error);
-        throw error;
-    }
+`;
+  try {
+    const response = await octokit.graphql<GraphQLResponse>(query, {
+      username,
+    });
+    return response.user.contributionsCollection.contributionCalendar;
+  } catch (error) {
+    console.error('Error fetching user contribution data:', error);
+    throw error;
+  }
 }

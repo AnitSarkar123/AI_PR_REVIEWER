@@ -1,13 +1,7 @@
-"use client";
+'use client';
 import React from 'react';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
   Bar,
@@ -17,46 +11,44 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
-import {
-  GitCommit,
-  GitPullRequest,
-  MessageSquare,
-  GitBranch,
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
+} from 'recharts';
+import { GitCommit, GitPullRequest, MessageSquare, GitBranch } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from '@/components/ui/skeleton';
 
-import { getDashboardStatus, getMonthlyActivity } from "@/module/dashboard/actions";
-import { ContributionCalendarView } from "@/module/dashboard/components/contribution/calendar-view";
+import { getDashboardStatus, getMonthlyActivity } from '@/module/dashboard/actions';
+import { ContributionCalendarView } from '@/module/dashboard/components/contribution/calendar-view';
 import { RecentActivityCard } from '@/module/dashboard/components/recent-activity-card';
 import { EmptyDashboardState } from '@/module/dashboard/components/onboarding/empty-state';
 
 const Mainpage = () => {
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ['dashboard-stats'],
     queryFn: async () => getDashboardStatus(),
     staleTime: 3 * 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   const { data: monthlyActivity, isLoading: isLoadingActivity } = useQuery({
-    queryKey: ["monthly-activity"],
+    queryKey: ['monthly-activity'],
     queryFn: async () => getMonthlyActivity(),
     staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
-  const hasNoData = !isLoading && stats && stats.totalRepos === 0 && stats.totalReviews === 0 && stats.TotalCommits === 0;
+  const hasNoData =
+    !isLoading &&
+    stats &&
+    stats.totalRepos === 0 &&
+    stats.totalReviews === 0 &&
+    stats.TotalCommits === 0;
 
   if (hasNoData) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Get started with AI-powered code reviews
-          </p>
+          <p className="text-muted-foreground">Get started with AI-powered code reviews</p>
         </div>
         <EmptyDashboardState />
       </div>
@@ -64,36 +56,26 @@ const Mainpage = () => {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       <div>
-        <h1 className='text-3xl font-bold tracking-tight'>Dashboard</h1>
-        <p className='text-muted-foreground'>Overview of your github activity and ai reviews</p>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Overview of your github activity and ai reviews</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 my-6">
           <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Repositories
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Repositories</CardTitle>
               <GitBranch className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold mt-1">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-20 bg-muted/65" />
-                ) : (
-                  stats?.totalRepos || 0
-                )}
+                {isLoading ? <Skeleton className="h-8 w-20 bg-muted/65" /> : stats?.totalRepos || 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Connected Repositories
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Connected Repositories</p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Commits
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Commits</CardTitle>
               <GitCommit className="h-4 w-4 text-violet-500" />
             </CardHeader>
             <CardContent>
@@ -104,36 +86,24 @@ const Mainpage = () => {
                   (stats?.totalCommits || 0).toLocaleString()
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                In the last year
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">In the last year</p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Pull Requests
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Pull Requests</CardTitle>
               <GitPullRequest className="h-4 w-4 text-indigo-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold mt-1">
-                {isLoading ? (
-                  <Skeleton className="h-8 w-20 bg-muted/65" />
-                ) : (
-                  stats?.totalPRs || 0
-                )}
+                {isLoading ? <Skeleton className="h-8 w-20 bg-muted/65" /> : stats?.totalPRs || 0}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                All Time
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">All Time</p>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/80">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                AI Reviews
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">AI Reviews</CardTitle>
               <MessageSquare className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -144,9 +114,7 @@ const Mainpage = () => {
                   stats?.totalReviews || 0
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Generated Reviews
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Generated Reviews</p>
             </CardContent>
           </Card>
         </div>
@@ -154,9 +122,7 @@ const Mainpage = () => {
       <Card>
         <CardHeader>
           <CardTitle>Contribution Activity</CardTitle>
-          <CardDescription>
-            Visualizing your coding frequency over the last year
-          </CardDescription>
+          <CardDescription>Visualizing your coding frequency over the last year</CardDescription>
         </CardHeader>
         <CardContent>
           <ContributionCalendarView />
@@ -178,7 +144,10 @@ const Mainpage = () => {
                   <div className="flex justify-between">
                     {Array.from({ length: 6 }).map((_, i) => (
                       <div key={i} className="flex flex-col items-center gap-2">
-                        <div className="h-24 w-10 bg-muted rounded animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                        <div
+                          className="h-24 w-10 bg-muted rounded animate-pulse"
+                          style={{ animationDelay: `${i * 100}ms` }}
+                        />
                         <div className="h-3 w-8 bg-muted rounded animate-pulse" />
                       </div>
                     ))}
@@ -187,43 +156,24 @@ const Mainpage = () => {
               </div>
             ) : (
               <div className="h-80 w-full">
-                <ResponsiveContainer
-                  width={"100%"}
-                  height={"100%"}
-                >
+                <ResponsiveContainer width={'100%'} height={'100%'}>
                   <BarChart data={monthlyActivity || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor:
-                          "var(--background)",
-                        borderColor: "var(--border)",
+                        backgroundColor: 'var(--background)',
+                        borderColor: 'var(--border)',
                       }}
                       itemStyle={{
-                        color: "var(--foreground)",
+                        color: 'var(--foreground)',
                       }}
                     />
                     <Legend />
-                    <Bar
-                      dataKey="commits"
-                      name="Commits"
-                      fill="#3b82f6"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="prs"
-                      name="Pull Requests"
-                      fill="#8b5cf6"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="reviews"
-                      name="AI Reviews"
-                      fill="#10b981"
-                      radius={[4, 4, 0, 0]}
-                    />
+                    <Bar dataKey="commits" name="Commits" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="prs" name="Pull Requests" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="reviews" name="AI Reviews" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -233,6 +183,6 @@ const Mainpage = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Mainpage;

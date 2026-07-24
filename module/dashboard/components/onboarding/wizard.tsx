@@ -1,52 +1,39 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Github,
-  MessageSquare,
-  ArrowRight,
-  ArrowLeft,
-  ExternalLink,
-  Bot,
-} from "lucide-react";
-import Link from "next/link";
+import { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Github, MessageSquare, ArrowRight, ArrowLeft, ExternalLink, Bot } from 'lucide-react';
+import Link from 'next/link';
 
 const STEPS = [
   {
     icon: Github,
-    title: "Connect a GitHub Repository",
+    title: 'Connect a GitHub Repository',
     description:
       "Browse your GitHub repositories and connect the ones you want AI to review. We'll install webhooks automatically.",
-    actionLabel: "Browse Repositories",
-    actionHref: "/dashboard/repository",
-    badge: "Step 1",
+    actionLabel: 'Browse Repositories',
+    actionHref: '/dashboard/repository',
+    badge: 'Step 1',
   },
   {
     icon: Bot,
-    title: "Open or Update a Pull Request",
+    title: 'Open or Update a Pull Request',
     description:
-      "Create a new pull request or push changes to an existing one. Our webhook will automatically trigger an AI code review.",
-    actionLabel: "Learn More",
-    actionHref: "#",
-    badge: "Step 2",
+      'Create a new pull request or push changes to an existing one. Our webhook will automatically trigger an AI code review.',
+    actionLabel: 'Learn More',
+    actionHref: '#',
+    badge: 'Step 2',
   },
   {
     icon: MessageSquare,
-    title: "Review the AI Feedback",
+    title: 'Review the AI Feedback',
     description:
-      "View detailed AI-generated code reviews with walkthroughs, issues, and suggestions. Export reviews or share them with your team.",
-    actionLabel: "View Reviews",
-    actionHref: "/dashboard/reviews",
-    badge: "Step 3",
+      'View detailed AI-generated code reviews with walkthroughs, issues, and suggestions. Export reviews or share them with your team.',
+    actionLabel: 'View Reviews',
+    actionHref: '/dashboard/reviews',
+    badge: 'Step 3',
   },
 ];
 
@@ -99,10 +86,10 @@ export function OnboardingWizard({ onDismiss }: { onDismiss?: () => void }) {
                 key={idx}
                 className={`h-2 w-2 rounded-full transition-colors ${
                   idx === currentStep
-                    ? "bg-primary"
+                    ? 'bg-primary'
                     : idx < currentStep
-                    ? "bg-primary/40"
-                    : "bg-muted-foreground/20"
+                      ? 'bg-primary/40'
+                      : 'bg-muted-foreground/20'
                 }`}
               />
             ))}

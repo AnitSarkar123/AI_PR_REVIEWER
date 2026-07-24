@@ -6,30 +6,30 @@ import { validateToken, TokenExpiredError } from './validation';
 export { TokenExpiredError };
 
 export const getGithubToken = async () => {
-    const session = await requireSession();
-    
-    const cachedToken = tokenCache.get(session.id);
-    if (cachedToken) {
-        return cachedToken;
-    }
+  const session = await requireSession();
 
-    const account = await prisma.account.findFirst({
-        where: {
-            userId: session.id,
-            providerId: "github"
-        }
-    });
+  const cachedToken = tokenCache.get(session.id);
+  if (cachedToken) {
+    return cachedToken;
+  }
 
-    if (!account?.accessToken) {
-        throw new Error("GitHub account integration not found");
-    }
+  const account = await prisma.account.findFirst({
+    where: {
+      userId: session.id,
+      providerId: 'github',
+    },
+  });
 
-    const isValid = await validateToken(account.accessToken);
-    if (!isValid) {
-        throw new TokenExpiredError();
-    }
+  if (!account?.accessToken) {
+    throw new Error('GitHub account integration not found');
+  }
 
-    tokenCache.set(session.id, account.accessToken);
+  const isValid = await validateToken(account.accessToken);
+  if (!isValid) {
+    throw new TokenExpiredError();
+  }
 
-    return account.accessToken;
+  tokenCache.set(session.id, account.accessToken);
+
+  return account.accessToken;
 };

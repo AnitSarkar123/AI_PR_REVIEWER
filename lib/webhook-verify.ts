@@ -2,10 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const WEBHOOK_SECRET = process.env.GITHUB_WEBHOOK_SECRET || '';
 
-export function verifyWebhookSignature(
-  payload: string,
-  signatureHeader: string | null
-): boolean {
+export function verifyWebhookSignature(payload: string, signatureHeader: string | null): boolean {
   if (!WEBHOOK_SECRET) {
     return false;
   }
@@ -14,13 +11,9 @@ export function verifyWebhookSignature(
     return false;
   }
 
-  const sig = signatureHeader.startsWith('sha256=')
-    ? signatureHeader.slice(7)
-    : signatureHeader;
+  const sig = signatureHeader.startsWith('sha256=') ? signatureHeader.slice(7) : signatureHeader;
 
-  const expected = createHmac('sha256', WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
+  const expected = createHmac('sha256', WEBHOOK_SECRET).update(payload).digest('hex');
 
   try {
     const expectedBuffer = Buffer.from(expected, 'utf8');
